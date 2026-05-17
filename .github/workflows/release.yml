@@ -1,0 +1,298 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  game:
+    uses: ./.github/workflows/build-game.yml
+    secrets: inherit
+
+  launcher:
+    uses: ./.github/workflows/build-launcher.yml
+    secrets: inherit
+
+  finalize-windows:
+    needs: [game, launcher]
+    runs-on: windows-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      AWS_DEFAULT_REGION: auto
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+      ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
+      RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Checkout patcher repo
+        uses: actions/checkout@v6
+
+      - name: Download artifacts from R2
+        shell: bash
+        run: |
+          scripts/r2-download.sh \
+            windows-dx.tar.gz windows-gl.tar.gz launcher-windows.tar.gz
+
+      - name: Unpack artifacts
+        shell: bash
+        run: |
+          mkdir -p game-dx game-gl launcher
+          tar -xzf windows-dx.tar.gz -C game-dx
+          tar -xzf windows-gl.tar.gz -C game-gl
+          tar -xzf launcher-windows.tar.gz -C launcher
+
+      - name: Merge launcher into game builds
+        shell: bash
+        run: |
+          cp -r launcher/* game-dx/
+          cp -r launcher/* game-gl/
+          rm -f game-dx/nfd.lib game-dx/nfd.pdb game-gl/nfd.lib game-gl/nfd.pdb
+
+      - name: Package and upload Windows DirectX
+        shell: bash
+        run: |
+          export PATH="$PATH:/c/Program Files/7-Zip"
+          mkdir -p "final/windows-dx/Links Awakening DX HD"
+          mv game-dx/* "final/windows-dx/Links Awakening DX HD/"
+          cd final/windows-dx
+          7z a -r ../../final-windows-dx.zip "Links Awakening DX HD"
+          cd ../..
+
+      - name: Package and upload Windows OpenGL
+        shell: bash
+        run: |
+          export PATH="$PATH:/c/Program Files/7-Zip"
+          mkdir -p "final/windows-gl/Links Awakening DX HD"
+          mv game-gl/* "final/windows-gl/Links Awakening DX HD/"
+          cd final/windows-gl
+          7z a -r ../../final-windows-gl.zip "Links Awakening DX HD"
+          cd ../..
+
+      - name: Upload final packages to R2
+        shell: bash
+        run: scripts/r2-upload.sh final-windows-dx.zip final-windows-gl.zip
+
+  finalize-linux:
+    needs: [game, launcher]
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      AWS_DEFAULT_REGION: auto
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+      ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
+      RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Checkout patcher repo
+        uses: actions/checkout@v6
+
+      - name: Download artifacts from R2
+        shell: bash
+        run: |
+          scripts/r2-download.sh \
+            linux-x64.tar.gz linux-arm64.tar.gz \
+            launcher-linux-x64.tar.gz launcher-linux-arm64.tar.gz
+
+      - name: Unpack and finalize Linux x64
+        shell: bash
+        run: |
+          mkdir -p game launcher final/linux-x64/"Links Awakening DX HD"
+          tar -xzf linux-x64.tar.gz -C game
+          tar -xzf launcher-linux-x64.tar.gz -C launcher
+          cp -r launcher/* game/
+          chmod +x game/"Link's Awakening DX HD"
+          chmod +x game/Launcher
+          mv game/* final/linux-x64/"Links Awakening DX HD/"
+          cd final/linux-x64
+          zip -r ../../final-linux-x64.zip "Links Awakening DX HD"
+
+      - name: Unpack and finalize Linux arm64
+        shell: bash
+        run: |
+          mkdir -p game launcher final/linux-arm64/"Links Awakening DX HD"
+          tar -xzf linux-arm64.tar.gz -C game
+          tar -xzf launcher-linux-arm64.tar.gz -C launcher
+          cp -r launcher/* game/
+          chmod +x game/"Link's Awakening DX HD"
+          chmod +x game/Launcher
+          mv game/* final/linux-arm64/"Links Awakening DX HD/"
+          cd final/linux-arm64
+          zip -r ../../final-linux-arm64.zip "Links Awakening DX HD"
+
+      - name: Upload final packages to R2
+        shell: bash
+        run: scripts/r2-upload.sh final-linux-x64.zip final-linux-arm64.zip
+
+  finalize-macos:
+    needs: [game, launcher]
+    runs-on: macos-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      AWS_DEFAULT_REGION: auto
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+      ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
+      RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Checkout patcher repo
+        uses: actions/checkout@v6
+
+      - name: Checkout game repo (for Icon.icns)
+        uses: actions/checkout@v6
+        with:
+          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
+          path: game
+          sparse-checkout: |
+            ladxhd_game_source_code/ProjectZ.MacOS/Resources/macOS-bundle
+            Directory.Build.props
+
+      - name: Read game version
+        shell: bash
+        run: |
+          VERSION=$(sed -n 's/.*<GameVersion>\(.*\)<\/GameVersion>.*/\1/p' game/Directory.Build.props)
+          echo "GAME_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Download artifacts from R2
+        shell: bash
+        run: |
+          scripts/r2-download.sh \
+            macos-arm64.tar.gz macos-x64.tar.gz \
+            launcher-macos-arm64.tar.gz launcher-macos-x64.tar.gz
+
+      - name: Finalize macOS arm64
+        shell: bash
+        run: |
+          mkdir -p work
+          tar -xzf macos-arm64.tar.gz -C work
+          tar -xzf launcher-macos-arm64.tar.gz -C work
+
+          export GAME_VERSION="$GAME_VERSION"
+          export GAME_ARCH="arm64"
+          export ICON_SRC="game/ladxhd_game_source_code/ProjectZ.MacOS/Resources/macOS-bundle/Contents/Resources/Icon.icns"
+          chmod +x scripts/bundle_macos.sh
+          scripts/bundle_macos.sh work
+
+          mkdir -p final/macos-arm64-game/"Links Awakening DX HD"
+          cp -RPp "work/Link's Awakening DX HD.app" "final/macos-arm64-game/Links Awakening DX HD/"
+          cd final/macos-arm64-game
+          zip -ry ../../final-macos-arm64-game.zip "Links Awakening DX HD"
+          cd ../..
+
+          mkdir -p final/macos-arm64-launcher/"Links Awakening DX HD"
+          cp -RPp "work/Link's Awakening DX HD Launcher.app" "final/macos-arm64-launcher/Links Awakening DX HD/"
+          cd final/macos-arm64-launcher
+          zip -ry ../../final-macos-arm64-launcher.zip "Links Awakening DX HD"
+          cd ../..
+
+      - name: Finalize macOS x64
+        shell: bash
+        run: |
+          rm -rf work
+          mkdir -p work
+          tar -xzf macos-x64.tar.gz -C work
+          tar -xzf launcher-macos-x64.tar.gz -C work
+
+          export GAME_VERSION="$GAME_VERSION"
+          export GAME_ARCH="x86_64"
+          export ICON_SRC="game/ladxhd_game_source_code/ProjectZ.MacOS/Resources/macOS-bundle/Contents/Resources/Icon.icns"
+          chmod +x scripts/bundle_macos.sh
+          scripts/bundle_macos.sh work
+
+          mkdir -p final/macos-x64-game/"Links Awakening DX HD"
+          cp -RPp "work/Link's Awakening DX HD.app" "final/macos-x64-game/Links Awakening DX HD/"
+          cd final/macos-x64-game
+          zip -ry ../../final-macos-x64-game.zip "Links Awakening DX HD"
+          cd ../..
+
+          mkdir -p final/macos-x64-launcher/"Links Awakening DX HD"
+          cp -RPp "work/Link's Awakening DX HD Launcher.app" "final/macos-x64-launcher/Links Awakening DX HD/"
+          cd final/macos-x64-launcher
+          zip -ry ../../final-macos-x64-launcher.zip "Links Awakening DX HD"
+          cd ../..
+
+      - name: Upload final packages to R2
+        shell: bash
+        run: |
+          scripts/r2-upload.sh \
+            final-macos-arm64-game.zip final-macos-arm64-launcher.zip \
+            final-macos-x64-game.zip final-macos-x64-launcher.zip
+
+  generate-patches:
+    needs: [finalize-windows, finalize-linux, finalize-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      AWS_DEFAULT_REGION: auto
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+      ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
+      RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Checkout patcher repo
+        uses: actions/checkout@v6
+
+      - name: Install xdelta3
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y xdelta3
+
+      - name: Download v1 baseline
+        shell: bash
+        run: curl -fL "${{ secrets.V1_URL }}" -o v1.zip
+
+      - name: Download Android game build
+        shell: bash
+        run: scripts/r2-download.sh android.tar.gz
+
+      - name: Package Android final
+        shell: bash
+        run: |
+          mkdir -p work/android/"Links Awakening DX HD"
+          tar -xzf android.tar.gz -C work/android/"Links Awakening DX HD"
+          cd work/android
+          zip -r ../../final-android.zip "Links Awakening DX HD"
+
+      - name: Download finalized packages from R2
+        shell: bash
+        run: |
+          scripts/r2-download.sh \
+            final-windows-dx.zip final-windows-gl.zip \
+            final-linux-x64.zip final-linux-arm64.zip \
+            final-macos-arm64-game.zip final-macos-arm64-launcher.zip \
+            final-macos-x64-game.zip final-macos-x64-launcher.zip
+
+      - name: Generate xdelta3 patches
+        shell: bash
+        run: |
+          for key in windows-dx windows-gl linux-x64 linux-arm64 \
+                     macos-arm64-game macos-arm64-launcher \
+                     macos-x64-game macos-x64-launcher android; do
+            xdelta3 -e -s v1.zip final-${key}.zip "${key}.xdelta"
+          done
+
+      - name: Create GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="build-${{ github.run_id }}"
+          gh release create "$TAG" \
+            --title "Build ${{ github.run_id }}" \
+            --notes "Automated build from run ${{ github.run_id }}" \
+            windows-dx.xdelta \
+            windows-gl.xdelta \
+            linux-x64.xdelta \
+            linux-arm64.xdelta \
+            macos-arm64-game.xdelta \
+            macos-arm64-launcher.xdelta \
+            macos-x64-game.xdelta \
+            macos-x64-launcher.xdelta \
+            android.xdelta
+
+      - name: Clean up R2 artifacts
+        shell: bash
+        run: aws s3 rm "s3://${R2_BUCKET}/${RUN_ID}/" --recursive

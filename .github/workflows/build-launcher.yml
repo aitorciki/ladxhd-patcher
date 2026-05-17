@@ -1,0 +1,82 @@
+name: Build Launcher
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runner }}
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      AWS_DEFAULT_REGION: auto
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+      ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
+      RUN_ID: ${{ github.run_id }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            runner: windows-latest
+            rid: win-x64
+            profile: Windows
+
+          - platform: linux-x64
+            runner: ubuntu-latest
+            rid: linux-x64
+            profile: Linux-x64
+
+          - platform: linux-arm64
+            runner: ubuntu-latest
+            rid: linux-arm64
+            profile: Linux-arm64
+
+          - platform: macos-x64
+            runner: macos-latest
+            rid: osx-x64
+            profile: macOS-x64
+
+          - platform: macos-arm64
+            runner: macos-latest
+            rid: osx-arm64
+            profile: macOS-arm64
+
+    steps:
+      - name: Checkout patcher repo
+        uses: actions/checkout@v6
+
+      - name: Checkout game repo
+        uses: actions/checkout@v6
+        with:
+          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
+          path: game
+          sparse-checkout: |
+            ladxhd_launcher_source_code
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish ${{ matrix.platform }}
+        shell: bash
+        working-directory: game/ladxhd_launcher_source_code
+        run: |
+          dotnet publish LADXHD_Launcher.csproj \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            -p:PublishProfile=${{ matrix.profile }}
+
+      - name: Pack build output
+        shell: bash
+        run: |
+          tar -czf launcher-${{ matrix.platform }}.tar.gz \
+            -C "game/ladxhd_launcher_source_code/~Publish/${{ matrix.profile }}" \
+            .
+
+      - name: Upload build to R2
+        shell: bash
+        run: scripts/r2-upload.sh launcher-${{ matrix.platform }}.tar.gz

@@ -1,0 +1,173 @@
+name: Build Game
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  setup:
+    runs-on: windows-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      AWS_DEFAULT_REGION: auto
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+      ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
+      RUN_ID: ${{ github.run_id }}
+
+    steps:
+      - name: Checkout patcher repo
+        uses: actions/checkout@v6
+
+      - name: Checkout game repo
+        uses: actions/checkout@v6
+        with:
+          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
+          path: game
+          sparse-checkout: |
+            ladxhd_game_source_code
+            assets_patches
+            assets_original
+            LADXHD_Migrater.exe
+
+      - name: Download v1.0.0 assets
+        shell: bash
+        run: curl -fL "${{ secrets.V1_URL }}" -o v1.zip
+
+      - name: Extract v1.0.0 assets
+        shell: bash
+        run: |
+          export PATH="/c/Program Files/7-Zip:$PATH"
+          unzip v1.zip -d v1
+          cp -r "v1/Links Awakening DX HD/Data" game/assets_original/Data
+          7z x "v1/Links Awakening DX HD/source.7z" -o"v1src"
+          cp -r v1src/ProjectZ/Content game/assets_original/Content
+
+      - name: Migrate assets
+        shell: bash
+        working-directory: game
+        run: ./LADXHD_Migrater.exe --migrate-assets
+
+      - name: Pack migrated source
+        shell: bash
+        run: |
+          tar -czf migrated-source.tar.gz \
+            -C game/ladxhd_game_source_code \
+            ProjectZ.Core/Content \
+            ProjectZ.Core/Data
+
+      - name: Upload migrated source to R2
+        shell: bash
+        run: scripts/r2-upload.sh migrated-source.tar.gz
+
+  build-game:
+    needs: setup
+    runs-on: windows-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      AWS_DEFAULT_REGION: auto
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+      ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
+      RUN_ID: ${{ github.run_id }}
+
+    strategy:
+      matrix:
+        include:
+          - key: windows-dx
+            project: ProjectZ.Desktop/ProjectZ.Desktop.csproj
+            framework: net8.0-windows
+            rid: win-x64
+            profile: FolderProfile_DX
+            output: "~Publish/Windows-DX"
+          - key: windows-gl
+            project: ProjectZ.Desktop/ProjectZ.Desktop.csproj
+            framework: net8.0
+            rid: win-x64
+            profile: FolderProfile_GL
+            output: "~Publish/Windows-GL"
+          - key: android
+            project: ProjectZ.Android/ProjectZ.Android.csproj
+            framework: net8.0-android
+            rid: ""
+            profile: FolderProfile_Android
+            output: "~Publish/Android"
+          - key: linux-x64
+            project: ProjectZ.Linux/ProjectZ.Linux.csproj
+            framework: net8.0
+            rid: linux-x64
+            profile: FolderProfile_Linux
+            output: "~Publish/Linux-x86_64"
+          - key: linux-arm64
+            project: ProjectZ.Linux/ProjectZ.Linux.csproj
+            framework: net8.0
+            rid: linux-arm64
+            profile: FolderProfile_Linux_Arm
+            output: "~Publish/Linux-Arm64"
+          - key: macos-arm64
+            project: ProjectZ.MacOS/ProjectZ.MacOS.csproj
+            framework: net8.0
+            rid: osx-arm64
+            profile: FolderProfile_MacOS
+            output: "~Publish/MacOS-Arm64"
+          - key: macos-x64
+            project: ProjectZ.MacOS/ProjectZ.MacOS.csproj
+            framework: net8.0
+            rid: osx-x64
+            profile: FolderProfile_MacOS_x64
+            output: "~Publish/MacOS-x86_64"
+
+    steps:
+      - name: Checkout patcher repo
+        uses: actions/checkout@v6
+
+      - name: Checkout game repo
+        uses: actions/checkout@v6
+        with:
+          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
+          path: game
+          sparse-checkout: |
+            ladxhd_game_source_code
+            assets_patches
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore workload manifests
+        shell: bash
+        working-directory: game/ladxhd_game_source_code
+        run: dotnet workload restore
+
+      - name: Download migrated source from R2
+        shell: bash
+        run: scripts/r2-download.sh migrated-source.tar.gz
+
+      - name: Unpack migrated source
+        shell: bash
+        run: tar -xzf migrated-source.tar.gz -C game/ladxhd_game_source_code
+
+      - name: Publish
+        shell: bash
+        working-directory: game/ladxhd_game_source_code
+        run: |
+          ARGS="-c Release -f ${{ matrix.framework }} -p:PublishProfile=${{ matrix.profile }}"
+          if [ -n "${{ matrix.rid }}" ]; then
+            ARGS="$ARGS -r ${{ matrix.rid }}"
+          fi
+          dotnet publish ${{ matrix.project }} $ARGS
+
+      - name: Pack build output
+        shell: bash
+        run: |
+          tar -czf ${{ matrix.key }}.tar.gz \
+            -C "game/ladxhd_game_source_code/${{ matrix.output }}" \
+            .
+
+      - name: Upload build to R2
+        shell: bash
+        run: scripts/r2-upload.sh ${{ matrix.key }}.tar.gz
+
