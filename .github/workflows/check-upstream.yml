@@ -1,0 +1,44 @@
+name: Check Upstream Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Get latest upstream tag
+        id: upstream
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(gh api repos/BigheadSMZ/Zelda-LA-DX-HD-Updated/releases/latest \
+            --jq '.tag_name')
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Check if already built
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ steps.upstream.outputs.tag }}" \
+               --repo ${{ github.repository }} > /dev/null 2>&1; then
+            echo "already_built=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_built=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger release build
+        if: steps.check.outputs.already_built == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run release.yml \
+            --repo ${{ github.repository }} \
+            --field trigger=release \
+            --field upstream_tag=${{ steps.upstream.outputs.tag }}
