@@ -133,9 +133,17 @@ jobs:
             assets_patches
 
       - name: Setup .NET 8
+        id: setup-dotnet
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "8.0.x"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: nuget-game-${{ matrix.framework }}-${{ hashFiles('game/**/*.csproj') }}
+          restore-keys: nuget-game-${{ matrix.framework }}-
 
       - name: Restore workload manifests
         shell: bash
@@ -170,4 +178,3 @@ jobs:
       - name: Upload build to R2
         shell: bash
         run: scripts/r2-upload.sh ${{ matrix.key }}.tar.gz
-
