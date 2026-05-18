@@ -51,10 +51,10 @@ jobs:
             profile: macOS-arm64
 
     steps:
-      - name: Checkout patcher repo
+      - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout game repo
+      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
         uses: actions/checkout@v6
         with:
           repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
@@ -68,7 +68,7 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Publish ${{ matrix.platform }}
+      - name: Publish
         shell: bash
         working-directory: game/ladxhd_launcher_source_code
         run: |
@@ -77,13 +77,13 @@ jobs:
             -r ${{ matrix.rid }} \
             -p:PublishProfile=${{ matrix.profile }}
 
-      - name: Pack build output
+      - name: Pack artifacts
         shell: bash
         run: |
           tar -czf launcher-${{ matrix.platform }}.tar.gz \
             -C "game/ladxhd_launcher_source_code/~Publish/${{ matrix.profile }}" \
             .
 
-      - name: Upload build to R2
+      - name: Upload artifacts to R2
         shell: bash
         run: scripts/r2-upload.sh launcher-${{ matrix.platform }}.tar.gz

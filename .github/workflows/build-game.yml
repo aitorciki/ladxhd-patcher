@@ -23,10 +23,10 @@ jobs:
       RUN_ID: ${{ github.run_id }}
 
     steps:
-      - name: Checkout patcher repo
+      - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout game repo
+      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
         uses: actions/checkout@v6
         with:
           repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
@@ -38,7 +38,7 @@ jobs:
             assets_original
             LADXHD_Migrater.exe
 
-      - name: Download v1.0.0 assets
+      - name: Download v1.0.0 archive
         shell: bash
         run: curl -fL "${{ secrets.V1_URL }}" -o v1.zip
 
@@ -56,7 +56,7 @@ jobs:
         working-directory: game
         run: ./LADXHD_Migrater.exe --migrate-assets
 
-      - name: Pack migrated source
+      - name: Pack migrated assets
         shell: bash
         run: |
           tar -czf migrated-source.tar.gz \
@@ -64,11 +64,11 @@ jobs:
             ProjectZ.Core/Content \
             ProjectZ.Core/Data
 
-      - name: Upload migrated source to R2
+      - name: Upload migrated assets to R2
         shell: bash
         run: scripts/r2-upload.sh migrated-source.tar.gz
 
-  build-game:
+  build:
     needs: setup
     runs-on: windows-latest
     env:
@@ -127,10 +127,10 @@ jobs:
             output: "~Publish/MacOS-x86_64"
 
     steps:
-      - name: Checkout patcher repo
+      - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout game repo
+      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
         uses: actions/checkout@v6
         with:
           repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
@@ -153,16 +153,16 @@ jobs:
           key: nuget-game-${{ matrix.framework }}-${{ hashFiles('game/**/*.csproj') }}
           restore-keys: nuget-game-${{ matrix.framework }}-
 
-      - name: Restore workload manifests
+      - name: Restore .NET workloads
         shell: bash
         working-directory: game/ladxhd_game_source_code
         run: dotnet workload restore
 
-      - name: Download migrated source from R2
+      - name: Download migrated assets from R2
         shell: bash
         run: scripts/r2-download.sh migrated-source.tar.gz
 
-      - name: Unpack migrated source
+      - name: Unpack migrated assets
         shell: bash
         run: tar -xzf migrated-source.tar.gz -C game/ladxhd_game_source_code
 
@@ -176,13 +176,13 @@ jobs:
           fi
           dotnet publish ${{ matrix.project }} $ARGS
 
-      - name: Pack build output
+      - name: Pack artifacts
         shell: bash
         run: |
           tar -czf ${{ matrix.key }}.tar.gz \
             -C "game/ladxhd_game_source_code/${{ matrix.output }}" \
             .
 
-      - name: Upload build to R2
+      - name: Upload artifacts to R2
         shell: bash
         run: scripts/r2-upload.sh ${{ matrix.key }}.tar.gz

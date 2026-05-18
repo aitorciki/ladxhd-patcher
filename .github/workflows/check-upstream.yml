@@ -12,7 +12,7 @@ jobs:
       contents: write
       actions: write
     steps:
-      - name: Get latest upstream tag
+      - name: Get latest BigheadSMZ/Zelda-LA-DX-HD-Updated tag
         id: upstream
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -39,7 +39,7 @@ jobs:
       ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
       RUN_ID: ${{ github.run_id }}
     steps:
-      - name: Checkout patcher repo
+      - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
       - name: Download artifacts from R2
@@ -48,35 +48,34 @@ jobs:
           scripts/r2-download.sh \
             windows-dx.tar.gz windows-gl.tar.gz launcher-windows.tar.gz
 
-      - name: Unpack artifacts
+      - name: Unpack launcher
         shell: bash
         run: |
-          mkdir -p game-dx game-gl launcher
-          tar -xzf windows-dx.tar.gz -C game-dx
-          tar -xzf windows-gl.tar.gz -C game-gl
+          mkdir -p launcher
           tar -xzf launcher-windows.tar.gz -C launcher
 
-      - name: Merge launcher into game builds
-        shell: bash
-        run: |
-          cp -r launcher/* game-dx/
-          cp -r launcher/* game-gl/
-          rm -f game-dx/nfd.lib game-dx/nfd.pdb game-gl/nfd.lib game-gl/nfd.pdb
-
-      - name: Package and upload Windows DirectX
+      - name: Finalize WindowsDX
         shell: bash
         run: |
           export PATH="$PATH:/c/Program Files/7-Zip"
+          mkdir -p game-dx
+          tar -xzf windows-dx.tar.gz -C game-dx
+          cp -r launcher/* game-dx/
+          rm -f game-dx/nfd.lib game-dx/nfd.pdb
           mkdir -p "final/windows-dx/Links Awakening DX HD"
           mv game-dx/* "final/windows-dx/Links Awakening DX HD/"
           cd final/windows-dx
           7z a -r ../../final-windows-dx.zip "Links Awakening DX HD"
           cd ../..
 
-      - name: Package and upload Windows OpenGL
+      - name: Finalize WindowsGL
         shell: bash
         run: |
           export PATH="$PATH:/c/Program Files/7-Zip"
+          mkdir -p game-gl
+          tar -xzf windows-gl.tar.gz -C game-gl
+          cp -r launcher/* game-gl/
+          rm -f game-gl/nfd.lib game-gl/nfd.pdb
           mkdir -p "final/windows-gl/Links Awakening DX HD"
           mv game-gl/* "final/windows-gl/Links Awakening DX HD/"
           cd final/windows-gl
@@ -99,7 +98,7 @@ jobs:
       ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
       RUN_ID: ${{ github.run_id }}
     steps:
-      - name: Checkout patcher repo
+      - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
       - name: Download artifacts from R2
@@ -109,7 +108,7 @@ jobs:
             linux-x64.tar.gz linux-arm64.tar.gz \
             launcher-linux-x64.tar.gz launcher-linux-arm64.tar.gz
 
-      - name: Unpack and finalize Linux x64
+      - name: Finalize Linux-x64
         shell: bash
         run: |
           mkdir -p game launcher final/linux-x64/"Links Awakening DX HD"
@@ -122,7 +121,7 @@ jobs:
           cd final/linux-x64
           zip -r ../../final-linux-x64.zip "Links Awakening DX HD"
 
-      - name: Unpack and finalize Linux arm64
+      - name: Finalize Linux-arm64
         shell: bash
         run: |
           mkdir -p game launcher final/linux-arm64/"Links Awakening DX HD"
@@ -151,16 +150,16 @@ jobs:
       ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
       RUN_ID: ${{ github.run_id }}
     steps:
-      - name: Checkout patcher repo
+      - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout game repo (for Icon.icns)
+      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
         uses: actions/checkout@v6
         with:
           repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
           path: game
           sparse-checkout: |
-            ladxhd_game_source_code/ProjectZ.MacOS/Resources/macOS-bundle
+            icon/macos
             Directory.Build.props
 
       - name: Read game version
@@ -176,7 +175,7 @@ jobs:
             macos-arm64.tar.gz macos-x64.tar.gz \
             launcher-macos-arm64.tar.gz launcher-macos-x64.tar.gz
 
-      - name: Finalize macOS arm64
+      - name: Finalize macOS-arm64
         shell: bash
         run: |
           mkdir -p work
@@ -185,7 +184,7 @@ jobs:
 
           export GAME_VERSION="$GAME_VERSION"
           export GAME_ARCH="arm64"
-          export ICON_SRC="game/ladxhd_game_source_code/ProjectZ.MacOS/Resources/macOS-bundle/Contents/Resources/Icon.icns"
+          export ICON_SRC="game/icon/macos/Icon.icns"
           scripts/bundle_macos.sh work
 
           mkdir -p final/macos-arm64-game/"Links Awakening DX HD"
@@ -200,7 +199,7 @@ jobs:
           zip -ry ../../final-macos-arm64-launcher.zip "Links Awakening DX HD"
           cd ../..
 
-      - name: Finalize macOS x64
+      - name: Finalize macOS-x64
         shell: bash
         run: |
           rm -rf work
@@ -210,7 +209,7 @@ jobs:
 
           export GAME_VERSION="$GAME_VERSION"
           export GAME_ARCH="x86_64"
-          export ICON_SRC="game/ladxhd_game_source_code/ProjectZ.MacOS/Resources/macOS-bundle/Contents/Resources/Icon.icns"
+          export ICON_SRC="game/icon/macos/Icon.icns"
           scripts/bundle_macos.sh work
 
           mkdir -p final/macos-x64-game/"Links Awakening DX HD"
@@ -244,14 +243,14 @@ jobs:
       ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
       RUN_ID: ${{ github.run_id }}
     steps:
-      - name: Checkout patcher repo
+      - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Download Android game build
+      - name: Download artifacts from R2
         shell: bash
         run: scripts/r2-download.sh android.tar.gz
 
-      - name: Package and upload Android final
+      - name: Finalize Android
         shell: bash
         run: |
           mkdir -p final/android/"Links Awakening DX HD"
@@ -281,14 +280,14 @@ jobs:
       ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
       RUN_ID: ${{ github.run_id }}
     steps:
-      - name: Checkout patcher repo
+      - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
       - name: Install xdelta3
         shell: bash
         run: sudo apt-get update && sudo apt-get install -y xdelta3
 
-      - name: Download v1 baseline
+      - name: Download v1.0.0 archive
         shell: bash
         run: curl -fL "${{ secrets.V1_URL }}" -o v1.zip
 
@@ -329,7 +328,7 @@ jobs:
             macos-arm64-game macos-arm64-launcher \
             macos-x64-game macos-x64-launcher android
 
-      - name: Create GitHub Release
+      - name: Create GitHub release
         if: github.event_name == 'schedule' || inputs.trigger == 'release'
         shell: bash
         env:
