@@ -359,3 +359,30 @@ jobs:
       - name: Clean up R2 artifacts
         shell: bash
         run: aws s3 rm "s3://${R2_BUCKET}/${RUN_ID}/" --recursive
+
+  cleanup-caches:
+    needs:
+      - game
+      - launcher
+      - finalize-windows
+      - finalize-linux
+      - finalize-macos
+      - finalize-android
+      - generate-patches
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Delete old caches (keep last 3)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh cache list \
+            --repo ${{ github.repository }} \
+            --limit 1000 \
+            --json key,lastAccessedAt \
+            --jq '. | sort_by(.lastAccessedAt) | reverse | .[3:] | .[].key' | \
+          while IFS= read -r key; do
+            [ -n "$key" ] && gh cache delete "$key" --repo ${{ github.repository }} || true
+          done
