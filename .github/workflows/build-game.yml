@@ -169,7 +169,7 @@ jobs:
         shell: bash
         working-directory: game/ladxhd_game_source_code
         run: |
-          ARGS="-c Release -f ${{ matrix.framework }} -p:PublishProfile=${{ matrix.profile }}"
+          ARGS="-c Release -f ${{ matrix.framework }} -p:PublishProfile=${{ matrix.profile }} -maxcpucount:1"
           if [ -n "${{ matrix.rid }}" ]; then
             ARGS="$ARGS -r ${{ matrix.rid }}"
           fi
