@@ -217,8 +217,43 @@ jobs:
             final-macos-arm64-game.zip final-macos-arm64-launcher.zip \
             final-macos-x64-game.zip final-macos-x64-launcher.zip
 
+  finalize-android:
+    needs: [game]
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      AWS_DEFAULT_REGION: auto
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+      ASSET_ENCRYPTION_KEY: ${{ secrets.ASSET_ENCRYPTION_KEY }}
+      RUN_ID: ${{ github.run_id }}
+    steps:
+      - name: Checkout patcher repo
+        uses: actions/checkout@v6
+
+      - name: Download Android game build
+        shell: bash
+        run: scripts/r2-download.sh android.tar.gz
+
+      - name: Package and upload Android final
+        shell: bash
+        run: |
+          mkdir -p final/android/"Links Awakening DX HD"
+          tar -xzf android.tar.gz -C final/android/"Links Awakening DX HD"
+          cd final/android/"Links Awakening DX HD"
+          rm -f _Microsoft.Android.Resource.Designer.dll
+          rm -f com.zelda.ladxhd.apk
+          mv com.zelda.ladxhd-Signed.apk com.zelda.ladxhd.apk
+          cd ..
+          zip -r ../../final-android.zip "Links Awakening DX HD"
+
+      - name: Upload final package to R2
+        shell: bash
+        run: scripts/r2-upload.sh final-android.zip
+
   generate-patches:
-    needs: [finalize-windows, finalize-linux, finalize-macos]
+    needs: [finalize-windows, finalize-linux, finalize-macos, finalize-android]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -242,18 +277,6 @@ jobs:
         shell: bash
         run: curl -fL "${{ secrets.V1_URL }}" -o v1.zip
 
-      - name: Download Android game build
-        shell: bash
-        run: scripts/r2-download.sh android.tar.gz
-
-      - name: Package Android final
-        shell: bash
-        run: |
-          mkdir -p work/android/"Links Awakening DX HD"
-          tar -xzf android.tar.gz -C work/android/"Links Awakening DX HD"
-          cd work/android
-          zip -r ../../final-android.zip "Links Awakening DX HD"
-
       - name: Download finalized packages from R2
         shell: bash
         run: |
@@ -261,7 +284,8 @@ jobs:
             final-windows-dx.zip final-windows-gl.zip \
             final-linux-x64.zip final-linux-arm64.zip \
             final-macos-arm64-game.zip final-macos-arm64-launcher.zip \
-            final-macos-x64-game.zip final-macos-x64-launcher.zip
+            final-macos-x64-game.zip final-macos-x64-launcher.zip \
+            final-android.zip
 
       - name: Generate xdelta3 patches
         shell: bash
