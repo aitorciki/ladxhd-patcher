@@ -2,6 +2,17 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      trigger:
+        description: "Trigger type: release, nightly, or manual"
+        required: false
+        default: "manual"
+      upstream_tag:
+        description: "Upstream tag (for release trigger only)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 5 * * *"
 
 jobs:
   game:
@@ -295,14 +306,33 @@ jobs:
             macos-arm64-game macos-arm64-launcher \
             macos-x64-game macos-x64-launcher android
 
+      - name: Compute release metadata
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "RELEASE_TAG=nightly" >> "$GITHUB_ENV"
+            echo "RELEASE_TITLE=Nightly ($(date -u +%Y%m%d))" >> "$GITHUB_ENV"
+            echo "IS_NIGHTLY=true" >> "$GITHUB_ENV"
+          elif [ "${{ inputs.trigger }}" = "release" ]; then
+            echo "RELEASE_TAG=${{ inputs.upstream_tag }}" >> "$GITHUB_ENV"
+            echo "RELEASE_TITLE=${{ inputs.upstream_tag }}" >> "$GITHUB_ENV"
+            echo "IS_NIGHTLY=false" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_TAG=manual-${{ github.run_id }}" >> "$GITHUB_ENV"
+            echo "RELEASE_TITLE=Manual build ${{ github.run_id }}" >> "$GITHUB_ENV"
+            echo "IS_NIGHTLY=false" >> "$GITHUB_ENV"
+          fi
+
       - name: Create GitHub Release
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="build-${{ github.run_id }}"
-          gh release create "$TAG" \
-            --title "Build ${{ github.run_id }}" \
+          if [ "$IS_NIGHTLY" = "true" ]; then
+            gh release delete "$RELEASE_TAG" --yes 2>/dev/null || true
+          fi
+          gh release create "$RELEASE_TAG" \
+            --title "$RELEASE_TITLE" \
             --notes "Automated build from run ${{ github.run_id }}" \
             windows-dx.xdelta \
             windows-gl.xdelta \
