@@ -1,4 +1,10 @@
 name: Release
+run-name: >-
+  ${{
+    github.event_name == 'schedule' && 'Nightly Build' ||
+    inputs.trigger == 'release' && (inputs.upstream_tag && format('Release {0}', inputs.upstream_tag) || 'Release Build') ||
+    'Manual Build'
+  }}
 
 on:
   workflow_dispatch:
