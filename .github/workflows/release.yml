@@ -171,7 +171,6 @@ jobs:
           export GAME_VERSION="$GAME_VERSION"
           export GAME_ARCH="arm64"
           export ICON_SRC="game/ladxhd_game_source_code/ProjectZ.MacOS/Resources/macOS-bundle/Contents/Resources/Icon.icns"
-          chmod +x scripts/bundle_macos.sh
           scripts/bundle_macos.sh work
 
           mkdir -p final/macos-arm64-game/"Links Awakening DX HD"
@@ -197,7 +196,6 @@ jobs:
           export GAME_VERSION="$GAME_VERSION"
           export GAME_ARCH="x86_64"
           export ICON_SRC="game/ladxhd_game_source_code/ProjectZ.MacOS/Resources/macOS-bundle/Contents/Resources/Icon.icns"
-          chmod +x scripts/bundle_macos.sh
           scripts/bundle_macos.sh work
 
           mkdir -p final/macos-x64-game/"Links Awakening DX HD"

@@ -28,12 +28,6 @@ BUNDLE_TMP="$TMP_DIR/$NAME.app"
 # Set executable bit on the standalone binary.
 chmod +x "$BASE/$NAME"
 
-# Ad-hoc codesign executable files (binary and dylibs).
-codesign --sign - --force "$BASE/$NAME"
-for dylib in libopenal.dylib libSDL2-2.0.0.dylib; do
-    [ -f "$BASE/$dylib" ] && codesign --sign - --force "$BASE/$dylib"
-done
-
 # Create bundle directory structure inside temp directory.
 # The bundle is only moved into BASE once all steps succeed , so a failure
 # at any point leaves nothing malformed in the game directory.
@@ -106,18 +100,12 @@ EOF
 codesign --sign - --force --deep "$BUNDLE_TMP"
 
 # Atomically move the completed bundle into BASE, replacing any stale copy.
-rm -rf "$BUNDLE"
-mv "$BUNDLE_TMP" "$BUNDLE"
+rm -rf "$BUNDLE" && mv "$BUNDLE_TMP" "$BUNDLE"
 
 # If the Launcher binary is present, make it executable and create its own app bundle.
 # The Launcher app bundle includes the game to allow launching it easily.
 if [ -f "$BASE/Launcher" ]; then
     chmod +x "$BASE/Launcher"
-
-    codesign --sign - --force "$BASE/Launcher"
-    for dylib in libAvaloniaNative.dylib libHarfBuzzSharp.dylib libSkiaSharp.dylib; do
-        [ -f "$BASE/$dylib" ] && codesign --sign - --force "$BASE/$dylib"
-    done
 
     LAUNCHER_BUNDLE="$BASE/$NAME Launcher.app"
     LAUNCHER_TMP="$TMP_DIR/$NAME Launcher.app"
@@ -125,11 +113,8 @@ if [ -f "$BASE/Launcher" ]; then
     # Copy the completed game bundle as the foundation (includes all game data, Content, Mods).
     cp -RPp "$BUNDLE" "$LAUNCHER_TMP"
 
-    # Add the Launcher binary and its Avalonia/Skia dylibs on top.
+    # Add the Launcher binary on top
     cp -p "$BASE/Launcher" "$LAUNCHER_TMP/Contents/MacOS/Launcher"
-    for dylib in libAvaloniaNative.dylib libHarfBuzzSharp.dylib libSkiaSharp.dylib; do
-        [ -f "$BASE/$dylib" ] && cp -p "$BASE/$dylib" "$LAUNCHER_TMP/Contents/MacOS/$dylib"
-    done
 
     # Write a launcher-specific Info.plist derived from the game bundle's plist.
     # Substitutes CFBundleExecutable (the game name) with "Launcher",
@@ -142,6 +127,5 @@ if [ -f "$BASE/Launcher" ]; then
     codesign --sign - --force --deep "$LAUNCHER_TMP"
 
     # Atomically move the completed launcher bundle into BASE, replacing any stale copy.
-    rm -rf "$LAUNCHER_BUNDLE"
-    mv "$LAUNCHER_TMP" "$LAUNCHER_BUNDLE"
+    rm -rf "$LAUNCHER_BUNDLE" && mv "$LAUNCHER_TMP" "$LAUNCHER_BUNDLE"
 fi
