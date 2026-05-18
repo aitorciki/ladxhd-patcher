@@ -344,6 +344,8 @@ jobs:
           if [ "$IS_NIGHTLY" = "true" ]; then
             gh release delete "$RELEASE_TAG" --yes --cleanup-tag 2>/dev/null || true
           fi
+          PRERELEASE_FLAG=""
+          [ "$IS_NIGHTLY" = "true" ] && PRERELEASE_FLAG="--prerelease"
           ASSETS=""
           for key in windows-dx windows-gl linux-x64 linux-arm64 \
                      macos-arm64-game macos-arm64-launcher \
@@ -351,6 +353,7 @@ jobs:
             ASSETS="$ASSETS ${key}-${RELEASE_SUFFIX}.xdelta"
           done
           gh release create "$RELEASE_TAG" \
+            $PRERELEASE_FLAG \
             --title "$RELEASE_TITLE" \
             --notes "$RELEASE_NOTES" \
             $ASSETS
