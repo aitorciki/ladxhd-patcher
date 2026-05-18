@@ -2,6 +2,7 @@ name: Release
 run-name: >-
   ${{
     github.event_name == 'schedule' && 'Nightly Build' ||
+    inputs.trigger == 'nightly' && 'Nightly Build' ||
     inputs.trigger == 'release' && (inputs.upstream_tag && format('Release {0}', inputs.upstream_tag) || 'Release Build') ||
     'Manual Build'
   }}
@@ -310,7 +311,7 @@ jobs:
       - name: Compute release metadata
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ inputs.trigger }}" = "nightly" ]; then
             echo "RELEASE_TAG=nightly" >> "$GITHUB_ENV"
             echo "RELEASE_SUFFIX=nightly-$(date -u +%Y%m%d)" >> "$GITHUB_ENV"
             echo "RELEASE_TITLE=Nightly ($(date -u +%Y%m%d))" >> "$GITHUB_ENV"
@@ -335,7 +336,7 @@ jobs:
             macos-x64-game macos-x64-launcher android
 
       - name: Create GitHub release
-        if: github.event_name == 'schedule' || inputs.trigger == 'release'
+        if: github.event_name == 'schedule' || inputs.trigger == 'nightly' || inputs.trigger == 'release'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -355,63 +356,63 @@ jobs:
             $ASSETS
 
       - name: Upload xdelta - windows-dx
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: windows-dx-build-${{ github.run_id }}
           path: windows-dx-*.xdelta
 
       - name: Upload xdelta - windows-gl
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: windows-gl-build-${{ github.run_id }}
           path: windows-gl-*.xdelta
 
       - name: Upload xdelta - linux-x64
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: linux-x64-build-${{ github.run_id }}
           path: linux-x64-*.xdelta
 
       - name: Upload xdelta - linux-arm64
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: linux-arm64-build-${{ github.run_id }}
           path: linux-arm64-*.xdelta
 
       - name: Upload xdelta - macos-arm64-game
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: macos-arm64-game-build-${{ github.run_id }}
           path: macos-arm64-game-*.xdelta
 
       - name: Upload xdelta - macos-arm64-launcher
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: macos-arm64-launcher-build-${{ github.run_id }}
           path: macos-arm64-launcher-*.xdelta
 
       - name: Upload xdelta - macos-x64-game
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: macos-x64-game-build-${{ github.run_id }}
           path: macos-x64-game-*.xdelta
 
       - name: Upload xdelta - macos-x64-launcher
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: macos-x64-launcher-build-${{ github.run_id }}
           path: macos-x64-launcher-*.xdelta
 
       - name: Upload xdelta - android
-        if: github.event_name == 'workflow_dispatch' && inputs.trigger != 'release'
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
           name: android-build-${{ github.run_id }}
