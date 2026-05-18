@@ -342,7 +342,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "$IS_NIGHTLY" = "true" ]; then
-            gh release delete "$RELEASE_TAG" --yes 2>/dev/null || true
+            gh release delete "$RELEASE_TAG" --yes --cleanup-tag 2>/dev/null || true
           fi
           ASSETS=""
           for key in windows-dx windows-gl linux-x64 linux-arm64 \
