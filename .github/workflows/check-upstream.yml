@@ -1,6 +1,7 @@
 name: Check Upstream Release
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 * * * *"
 
@@ -9,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
       - name: Get latest upstream tag
         id: upstream
