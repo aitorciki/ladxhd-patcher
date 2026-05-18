@@ -266,11 +266,10 @@ jobs:
       - name: Generate xdelta3 patches
         shell: bash
         run: |
-          for key in windows-dx windows-gl linux-x64 linux-arm64 \
-                     macos-arm64-game macos-arm64-launcher \
-                     macos-x64-game macos-x64-launcher android; do
-            xdelta3 -e -s v1.zip final-${key}.zip "${key}.xdelta"
-          done
+          scripts/generate_xdelta_patches.sh v1.zip \
+            windows-dx windows-gl linux-x64 linux-arm64 \
+            macos-arm64-game macos-arm64-launcher \
+            macos-x64-game macos-x64-launcher android
 
       - name: Create GitHub Release
         shell: bash
