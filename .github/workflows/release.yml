@@ -364,6 +364,7 @@ jobs:
         with:
           name: windows-dx-build-${{ github.run_id }}
           path: windows-dx-*.xdelta
+          archive: false
 
       - name: Upload xdelta - windows-gl
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
@@ -371,6 +372,7 @@ jobs:
         with:
           name: windows-gl-build-${{ github.run_id }}
           path: windows-gl-*.xdelta
+          archive: false
 
       - name: Upload xdelta - linux-x64
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
@@ -378,6 +380,7 @@ jobs:
         with:
           name: linux-x64-build-${{ github.run_id }}
           path: linux-x64-*.xdelta
+          archive: false
 
       - name: Upload xdelta - linux-arm64
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
@@ -385,6 +388,7 @@ jobs:
         with:
           name: linux-arm64-build-${{ github.run_id }}
           path: linux-arm64-*.xdelta
+          archive: false
 
       - name: Upload xdelta - macos-arm64-game
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
@@ -392,6 +396,7 @@ jobs:
         with:
           name: macos-arm64-game-build-${{ github.run_id }}
           path: macos-arm64-game-*.xdelta
+          archive: false
 
       - name: Upload xdelta - macos-arm64-launcher
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
@@ -399,6 +404,7 @@ jobs:
         with:
           name: macos-arm64-launcher-build-${{ github.run_id }}
           path: macos-arm64-launcher-*.xdelta
+          archive: false
 
       - name: Upload xdelta - macos-x64-game
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
@@ -406,6 +412,7 @@ jobs:
         with:
           name: macos-x64-game-build-${{ github.run_id }}
           path: macos-x64-game-*.xdelta
+          archive: false
 
       - name: Upload xdelta - macos-x64-launcher
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
@@ -413,6 +420,7 @@ jobs:
         with:
           name: macos-x64-launcher-build-${{ github.run_id }}
           path: macos-x64-launcher-*.xdelta
+          archive: false
 
       - name: Upload xdelta - android
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
@@ -420,6 +428,7 @@ jobs:
         with:
           name: android-build-${{ github.run_id }}
           path: android-*.xdelta
+          archive: false
 
       - name: Clean up R2 artifacts
         shell: bash
