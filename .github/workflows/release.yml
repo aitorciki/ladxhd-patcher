@@ -296,7 +296,7 @@ jobs:
 
       - name: Download v1.0.0 archive
         shell: bash
-        run: curl -fL "${{ secrets.V1_URL }}" -o v1.zip
+        run: curl -fL --retry 3 --retry-all-errors --retry-delay 5 "${{ secrets.V1_URL }}" -o v1.zip
 
       - name: Download finalized packages from R2
         shell: bash
