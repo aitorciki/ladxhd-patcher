@@ -35,7 +35,7 @@ jobs:
             ladxhd_game_source_code
             assets_patches
             assets_original
-            LADXHD_Migrater.exe
+            LADXHD-Migrater.exe
 
       - name: Download v1.0.0 archive
         shell: bash
@@ -53,7 +53,7 @@ jobs:
       - name: Migrate assets
         shell: bash
         working-directory: game
-        run: ./LADXHD_Migrater.exe --migrate-assets
+        run: ./LADXHD-Migrater.exe --migrate-assets
 
       - name: Pack migrated assets
         shell: bash
