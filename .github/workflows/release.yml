@@ -190,7 +190,6 @@ jobs:
           tar -xzf launcher-macos-arm64.tar.gz -C work
 
           export GAME_VERSION="$GAME_VERSION"
-          export GAME_ARCH="arm64"
           export ICON_SRC="game/icon/macos/Icon.icns"
           scripts/bundle_macos.sh work
 
@@ -215,7 +214,6 @@ jobs:
           tar -xzf launcher-macos-x64.tar.gz -C work
 
           export GAME_VERSION="$GAME_VERSION"
-          export GAME_ARCH="x86_64"
           export ICON_SRC="game/icon/macos/Icon.icns"
           scripts/bundle_macos.sh work
 
