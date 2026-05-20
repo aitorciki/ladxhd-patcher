@@ -147,10 +147,12 @@ jobs:
 
       - name: Cache NuGet packages
         uses: actions/cache@v5
+        env:
+          CACHE_GROUP: ${{ matrix.framework == 'net8.0' && 'net8.0-gl' || matrix.framework }}
         with:
           path: ~/.nuget/packages
-          key: nuget-game-${{ matrix.framework }}-${{ hashFiles('game/**/*.csproj') }}
-          restore-keys: nuget-game-${{ matrix.framework }}-
+          key: nuget-game-${{ env.CACHE_GROUP }}-${{ hashFiles('game/**/*.csproj') }}
+          restore-keys: nuget-game-${{ env.CACHE_GROUP }}-
 
       - name: Restore .NET workloads
         shell: bash
