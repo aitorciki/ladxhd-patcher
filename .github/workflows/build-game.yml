@@ -88,42 +88,49 @@ jobs:
             rid: win-x64
             profile: FolderProfile_DX
             output: "~Publish/Windows-DX"
+            extra: ""
           - key: windows-gl
             project: ProjectZ.Desktop/ProjectZ.Desktop.csproj
             framework: net8.0
             rid: win-x64
             profile: FolderProfile_GL
             output: "~Publish/Windows-GL"
+            extra: ""
           - key: android
             project: ProjectZ.Android/ProjectZ.Android.csproj
             framework: net8.0-android
             rid: ""
             profile: FolderProfile_Android
             output: "~Publish/Android"
+            extra: "-p:EnableAndroidTargeting=true"
           - key: linux-x64
             project: ProjectZ.Linux/ProjectZ.Linux.csproj
             framework: net8.0
             rid: linux-x64
             profile: FolderProfile_Linux
             output: "~Publish/Linux-x86_64"
+            extra: ""
           - key: linux-arm64
             project: ProjectZ.Linux/ProjectZ.Linux.csproj
             framework: net8.0
             rid: linux-arm64
             profile: FolderProfile_Linux_Arm
             output: "~Publish/Linux-Arm64"
+            extra: ""
           - key: macos-arm64
             project: ProjectZ.MacOS/ProjectZ.MacOS.csproj
             framework: net8.0
             rid: osx-arm64
             profile: FolderProfile_MacOS
             output: "~Publish/MacOS-Arm64"
+            extra: ""
           - key: macos-x64
             project: ProjectZ.MacOS/ProjectZ.MacOS.csproj
             framework: net8.0
             rid: osx-x64
             profile: FolderProfile_MacOS_x64
             output: "~Publish/MacOS-x86_64"
+            extra: ""
 
     steps:
       - name: Checkout ladxhd-patcher
@@ -155,6 +162,7 @@ jobs:
           restore-keys: nuget-game-${{ env.CACHE_GROUP }}-
 
       - name: Restore .NET workloads
+        if: matrix.key == 'android'
         shell: bash
         working-directory: game/ladxhd_game_source_code
         run: dotnet workload restore
@@ -175,7 +183,7 @@ jobs:
           if [ -n "${{ matrix.rid }}" ]; then
             ARGS="$ARGS -r ${{ matrix.rid }}"
           fi
-          dotnet publish ${{ matrix.project }} $ARGS
+          dotnet publish ${{ matrix.project }} $ARGS ${{ matrix.extra }}
 
       - name: Pack artifacts
         shell: bash
