@@ -59,39 +59,12 @@ jobs:
           scripts/r2-download.sh \
             windows-dx.tar.gz windows-gl.tar.gz launcher-windows.tar.gz
 
-      - name: Unpack launcher
-        shell: bash
-        run: |
-          mkdir -p launcher
-          tar -xzf launcher-windows.tar.gz -C launcher
-
-      - name: Finalize WindowsDX
+      - name: Finalize Windows
         shell: bash
         run: |
           export PATH="$PATH:/c/Program Files/7-Zip"
-          mkdir -p game-dx
-          tar -xzf windows-dx.tar.gz -C game-dx
-          cp -r launcher/* game-dx/
-          rm -f game-dx/nfd.lib game-dx/nfd.pdb
-          mkdir -p "final/windows-dx/Links Awakening DX HD"
-          mv game-dx/* "final/windows-dx/Links Awakening DX HD/"
-          cd final/windows-dx
-          7z a -r ../../final-windows-dx.zip "Links Awakening DX HD"
-          cd ../..
-
-      - name: Finalize WindowsGL
-        shell: bash
-        run: |
-          export PATH="$PATH:/c/Program Files/7-Zip"
-          mkdir -p game-gl
-          tar -xzf windows-gl.tar.gz -C game-gl
-          cp -r launcher/* game-gl/
-          rm -f game-gl/nfd.lib game-gl/nfd.pdb
-          mkdir -p "final/windows-gl/Links Awakening DX HD"
-          mv game-gl/* "final/windows-gl/Links Awakening DX HD/"
-          cd final/windows-gl
-          7z a -r ../../final-windows-gl.zip "Links Awakening DX HD"
-          cd ../..
+          scripts/finalize-windows.sh windows-dx
+          scripts/finalize-windows.sh windows-gl
 
       - name: Upload final packages to R2
         shell: bash
@@ -119,31 +92,11 @@ jobs:
             linux-x64.tar.gz linux-arm64.tar.gz \
             launcher-linux-x64.tar.gz launcher-linux-arm64.tar.gz
 
-      - name: Finalize Linux-x64
+      - name: Finalize Linux
         shell: bash
         run: |
-          mkdir -p game launcher final/linux-x64/"Links Awakening DX HD"
-          tar -xzf linux-x64.tar.gz -C game
-          tar -xzf launcher-linux-x64.tar.gz -C launcher
-          cp -r launcher/* game/
-          chmod +x game/"Link's Awakening DX HD"
-          chmod +x game/Launcher
-          mv game/* final/linux-x64/"Links Awakening DX HD/"
-          cd final/linux-x64
-          zip -r ../../final-linux-x64.zip "Links Awakening DX HD"
-
-      - name: Finalize Linux-arm64
-        shell: bash
-        run: |
-          mkdir -p game launcher final/linux-arm64/"Links Awakening DX HD"
-          tar -xzf linux-arm64.tar.gz -C game
-          tar -xzf launcher-linux-arm64.tar.gz -C launcher
-          cp -r launcher/* game/
-          chmod +x game/"Link's Awakening DX HD"
-          chmod +x game/Launcher
-          mv game/* final/linux-arm64/"Links Awakening DX HD/"
-          cd final/linux-arm64
-          zip -r ../../final-linux-arm64.zip "Links Awakening DX HD"
+          scripts/finalize-linux.sh linux-x64
+          scripts/finalize-linux.sh linux-arm64
 
       - name: Upload final packages to R2
         shell: bash
@@ -186,52 +139,13 @@ jobs:
             macos-arm64.tar.gz macos-x64.tar.gz \
             launcher-macos-arm64.tar.gz launcher-macos-x64.tar.gz
 
-      - name: Finalize macOS-arm64
+      - name: Finalize macOS
         shell: bash
+        env:
+          ICON_SRC: game/icon/macos/Icon.icns
         run: |
-          mkdir -p work
-          tar -xzf macos-arm64.tar.gz -C work
-          tar -xzf launcher-macos-arm64.tar.gz -C work
-
-          export GAME_VERSION="$GAME_VERSION"
-          export ICON_SRC="game/icon/macos/Icon.icns"
-          scripts/bundle_macos.sh work
-
-          mkdir -p final/macos-arm64-game/"Links Awakening DX HD"
-          cp -RPp "work/Link's Awakening DX HD.app" "final/macos-arm64-game/Links Awakening DX HD/"
-          cd final/macos-arm64-game
-          zip -ry ../../final-macos-arm64-game.zip "Links Awakening DX HD"
-          cd ../..
-
-          mkdir -p final/macos-arm64-launcher/"Links Awakening DX HD"
-          cp -RPp "work/Link's Awakening DX HD Launcher.app" "final/macos-arm64-launcher/Links Awakening DX HD/"
-          cd final/macos-arm64-launcher
-          zip -ry ../../final-macos-arm64-launcher.zip "Links Awakening DX HD"
-          cd ../..
-
-      - name: Finalize macOS-x64
-        shell: bash
-        run: |
-          rm -rf work
-          mkdir -p work
-          tar -xzf macos-x64.tar.gz -C work
-          tar -xzf launcher-macos-x64.tar.gz -C work
-
-          export GAME_VERSION="$GAME_VERSION"
-          export ICON_SRC="game/icon/macos/Icon.icns"
-          scripts/bundle_macos.sh work
-
-          mkdir -p final/macos-x64-game/"Links Awakening DX HD"
-          cp -RPp "work/Link's Awakening DX HD.app" "final/macos-x64-game/Links Awakening DX HD/"
-          cd final/macos-x64-game
-          zip -ry ../../final-macos-x64-game.zip "Links Awakening DX HD"
-          cd ../..
-
-          mkdir -p final/macos-x64-launcher/"Links Awakening DX HD"
-          cp -RPp "work/Link's Awakening DX HD Launcher.app" "final/macos-x64-launcher/Links Awakening DX HD/"
-          cd final/macos-x64-launcher
-          zip -ry ../../final-macos-x64-launcher.zip "Links Awakening DX HD"
-          cd ../..
+          scripts/finalize-macos.sh macos-arm64
+          scripts/finalize-macos.sh macos-x64
 
       - name: Upload final packages to R2
         shell: bash
@@ -261,15 +175,7 @@ jobs:
 
       - name: Finalize Android
         shell: bash
-        run: |
-          mkdir -p final/android/"Links Awakening DX HD"
-          tar -xzf android.tar.gz -C final/android/"Links Awakening DX HD"
-          cd final/android/"Links Awakening DX HD"
-          rm -f _Microsoft.Android.Resource.Designer.dll
-          rm -f com.zelda.ladxhd.apk
-          mv com.zelda.ladxhd-Signed.apk com.zelda.ladxhd.apk
-          cd ..
-          zip -r ../../final-android.zip "Links Awakening DX HD"
+        run: scripts/finalize-android.sh
 
       - name: Upload final package to R2
         shell: bash
@@ -332,7 +238,7 @@ jobs:
       - name: Generate xdelta3 patches
         shell: bash
         run: |
-          scripts/generate_xdelta_patches.sh v1.zip "$RELEASE_SUFFIX" \
+          scripts/generate-xdelta-patches.sh v1.zip "$RELEASE_SUFFIX" \
             windows-dx windows-gl linux-x64 linux-arm64 \
             macos-arm64-game macos-arm64-launcher \
             macos-x64-game macos-x64-launcher android

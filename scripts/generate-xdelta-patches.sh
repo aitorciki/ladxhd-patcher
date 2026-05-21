@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Generate xdelta3 patches in parallel, bounded by CPU count.
-# Usage: generate_xdelta_patches.sh <source.zip> <suffix> <key1> <key2> ...
+# Usage: generate-xdelta-patches.sh <source.zip> <suffix> <key1> <key2> ...
 #
 # For each key, runs: xdelta3 -e -s <source.zip> final-<key>.zip <key>-<suffix>.xdelta
 
