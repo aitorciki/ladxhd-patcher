@@ -6,7 +6,6 @@ on:
       game_ref:
         description: "Git ref to checkout from the game repo"
         required: false
-        default: ""
         type: string
 
 jobs:

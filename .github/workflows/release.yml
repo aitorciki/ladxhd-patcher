@@ -11,13 +11,17 @@ on:
   workflow_dispatch:
     inputs:
       trigger:
-        description: "Trigger type: release, nightly, or manual"
-        required: false
+        description: "Trigger type"
+        required: true
         default: "manual"
+        type: choice
+        options:
+          - manual
+          - release
+          - nightly
       upstream_tag:
         description: "Upstream tag (for release trigger only)"
         required: false
-        default: ""
   schedule:
     - cron: "0 5 * * *"
 
