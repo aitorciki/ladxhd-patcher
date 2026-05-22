@@ -81,7 +81,7 @@ jobs:
         shell: bash
         run: scripts/r2-upload.sh final-windows-dx.zip final-windows-gl.zip
 
-  finalize-linux:
+  finalize-linux-standalone:
     needs: [game, launcher]
     runs-on: ubuntu-latest
     steps:
@@ -95,15 +95,50 @@ jobs:
             linux-x64.tar.gz linux-arm64.tar.gz \
             launcher-linux-x64.tar.gz launcher-linux-arm64.tar.gz
 
-      - name: Finalize Linux
+      - name: Finalize Linux Standalone
         shell: bash
         run: |
-          scripts/finalize-linux.sh linux-x64
-          scripts/finalize-linux.sh linux-arm64
+          scripts/finalize-linux-standalone.sh linux-x64
+          scripts/finalize-linux-standalone.sh linux-arm64
 
       - name: Upload final packages to R2
         shell: bash
         run: scripts/r2-upload.sh final-linux-x64.zip final-linux-arm64.zip
+
+  finalize-linux-appimage:
+    needs: [game, launcher]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ladxhd-patcher
+        uses: actions/checkout@v6
+
+      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
+        uses: actions/checkout@v6
+        with:
+          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
+          path: game
+          sparse-checkout: |
+            icon
+
+      - name: Download artifacts from R2
+        shell: bash
+        run: |
+          scripts/r2-download.sh \
+            linux-x64.tar.gz linux-arm64.tar.gz \
+            launcher-linux-x64.tar.gz launcher-linux-arm64.tar.gz
+
+      - name: Finalize Linux AppImage
+        shell: bash
+        env:
+          ICON_SVG: game/icon/Icon.svg
+          ICON_PNG: game/icon/linux/Icon.png
+        run: |
+          scripts/finalize-linux-appimage.sh linux-x64
+          scripts/finalize-linux-appimage.sh linux-arm64
+
+      - name: Upload final packages to R2
+        shell: bash
+        run: scripts/r2-upload.sh final-linux-x64-appimage.zip final-linux-arm64-appimage.zip
 
   finalize-macos:
     needs: [game, launcher]
@@ -169,7 +204,14 @@ jobs:
         run: scripts/r2-upload.sh final-android.zip
 
   generate-patches:
-    needs: [finalize-windows, finalize-linux, finalize-macos, finalize-android]
+    needs:
+      [
+        finalize-windows,
+        finalize-linux-standalone,
+        finalize-linux-appimage,
+        finalize-macos,
+        finalize-android,
+      ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -191,6 +233,7 @@ jobs:
           scripts/r2-download.sh \
             final-windows-dx.zip final-windows-gl.zip \
             final-linux-x64.zip final-linux-arm64.zip \
+            final-linux-x64-appimage.zip final-linux-arm64-appimage.zip \
             final-macos-arm64-game.zip final-macos-arm64-launcher.zip \
             final-macos-x64-game.zip final-macos-x64-launcher.zip \
             final-android.zip
@@ -219,6 +262,7 @@ jobs:
         run: |
           scripts/generate-xdelta-patches.sh v1.zip "$RELEASE_SUFFIX" \
             windows-dx windows-gl linux-x64 linux-arm64 \
+            linux-x64-appimage linux-arm64-appimage \
             macos-arm64-game macos-arm64-launcher \
             macos-x64-game macos-x64-launcher android
 
@@ -235,6 +279,7 @@ jobs:
           [ "$IS_NIGHTLY" = "true" ] && PRERELEASE_FLAG="--prerelease"
           ASSETS=""
           for key in windows-dx windows-gl linux-x64 linux-arm64 \
+                     linux-x64-appimage linux-arm64-appimage \
                      macos-arm64-game macos-arm64-launcher \
                      macos-x64-game macos-x64-launcher android; do
             ASSETS="$ASSETS ${key}-${RELEASE_SUFFIX}.xdelta"
@@ -266,7 +311,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: linux-x64-build-${{ github.run_id }}
-          path: linux-x64-*.xdelta
+          path: |
+            linux-x64-*.xdelta
+            !linux-x64-appimage-*.xdelta
           archive: false
 
       - name: Upload xdelta - linux-arm64
@@ -274,7 +321,25 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: linux-arm64-build-${{ github.run_id }}
-          path: linux-arm64-*.xdelta
+          path: |
+            linux-arm64-*.xdelta
+            !linux-arm64-appimage-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - linux-x64-appimage
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-x64-appimage-build-${{ github.run_id }}
+          path: linux-x64-appimage-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - linux-arm64-appimage
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-arm64-appimage-build-${{ github.run_id }}
+          path: linux-arm64-appimage-*.xdelta
           archive: false
 
       - name: Upload xdelta - macos-arm64-game
@@ -326,7 +391,8 @@ jobs:
       - game
       - launcher
       - finalize-windows
-      - finalize-linux
+      - finalize-linux-standalone
+      - finalize-linux-appimage
       - finalize-macos
       - finalize-android
       - generate-patches

@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Finalize a Linux build: merge game and launcher, then zip for distribution.
 #
-# Usage: scripts/finalize-linux.sh <key>
+# Usage: scripts/finalize-linux-standalone.sh <key>
 #   key: linux-x64 | linux-arm64
 #
 # Expects <key>.tar.gz and launcher-<key>.tar.gz in the working directory.
