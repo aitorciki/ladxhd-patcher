@@ -45,18 +45,6 @@ cp -r "${GAME_DIR}/"* "${APPDIR}/opt/"
 cp -r "${LAUNCHER_DIR}/"* "${APPDIR}/opt/"
 chmod +x "${APPDIR}/opt/Link's Awakening DX HD" "${APPDIR}/opt/Launcher"
 
-# hack: appimages are read-only, and as such the game crashes when trying to create Mods/*
-# by creating the dir structure beforehand the game will work, but mods aren't installable
-mkdir -p \
-    "${APPDIR}/opt/Mods/Animations" \
-    "${APPDIR}/opt/Mods/Dungeon" \
-    "${APPDIR}/opt/Mods/Graphics" \
-    "${APPDIR}/opt/Mods/LAHDMods" \
-    "${APPDIR}/opt/Mods/Languages" \
-    "${APPDIR}/opt/Mods/Maps" \
-    "${APPDIR}/opt/Mods/Music" \
-    "${APPDIR}/opt/Mods/SoundEffects"
-
 cp "${ICON_SVG}" "${APPDIR}/${DESKTOP_NAME}.svg"
 cp "${ICON_PNG}" "${APPDIR}/.DirIcon"
 
