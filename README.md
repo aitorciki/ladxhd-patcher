@@ -19,7 +19,8 @@ This repo is an experiment to drastically reduce the size of the patches and rem
 - A patching application that can apply xdelta3 patches. For example:
   - [DeltaPatcher](https://github.com/marco-calautti/DeltaPatcher) for Windows or Linux (make sure to toggle the backup original option to keep your v1.0.0 file intact!)
   - [MultiPatch](https://projects.sappharad.com/multipatch/) for macOS.
-  - The xdelta3 command-line tool on any platform.
+  - [XDeltaTool](https://play.google.com/store/apps/details?id=com.bookerdev.xdeltatool) for Android (yes, these patches allow creating an installable APK directly on Android).
+  - The xdelta3 command-line tool [on](https://github.com/jmacd/xdelta-gpl/releases/tag/v3.1.0) [any](https://packages.ubuntu.com/resolute/xdelta3) [platform](https://formulae.brew.sh/formula/xdelta).
 - A copy of the v1.0.0 distribution of the game. The provided patches only work with the zip file with sha256 checksum `118a4adfa782b4c0097867609cb79474abaf9a95b3f684b04715a46d424beb1c`.
 
 You are ready, download the patch from the releases page, apply to the v1.0.0 zip, and decompress the resulting zip to play the game.
