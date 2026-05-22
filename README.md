@@ -7,6 +7,7 @@ An experimental alternative patching mechanism for [BigheadSMZ/Zelda-LA-DX-HD-Up
 Link's Awakening DX HD Updated is a modern re-implementation of the classic GameBoy Color game for modern platforms. That repository avoids including or distributing any copyrighted content, and opts for a patching strategy instead: users need to bring their own copy of the original release of the re-implementation, and run a patcher application on it to generate the updated version.
 
 As new features and platforms have been added to the patcher, it has hugely grown in size (~500MB) since it bundles patches for all platforms, and complexity:
+
 - Per-platform permissions issues, e.g. macOS's quarantines.
 - Missing dependencies that can confuse users, e.g. Java / 7z / apksigner to generate APKs on Linux / macOS.
 - All sorts of weird interactions of the patcher and different system setups, e.g. Linux file explorers and extensions.
@@ -28,5 +29,13 @@ You are ready, download the patch from the releases page, apply to the v1.0.0 zi
 - **How do I update an already patched game?**  
 Re-apply the patch to your v1.0.0 zip, and decompress / copy the resulting file on top of your existing game accepting override of all files.
 
-- **Are mods supported in Android in this model?**  
-Not yet!
+- **Are these patches compatible with [mods](https://github.com/BigheadSMZ/Zelda-LA-DX-HD-Mods)?**  
+Partially. LAHDpaks require a copy of unmodified v1.0.0 assets stored in `Data/Backup` to patch, but games patched with this repository's deltas lack these backup files. There is a manual workaround though:
+  - Extract v1.0.0.
+  - Copy all `Data` and `Content` files into a flattened `Data/Backup`:  
+
+  ```bash
+  mkdir /path/to/patched/Data/Backup && find /path/to/v1.0.0/{Content,Data} -type f -exec cp {} /path/to/patched/Data/Backup/ \;
+  ```
+
+  This won't work with Android and Linux AppImages though.
