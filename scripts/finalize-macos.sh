@@ -23,12 +23,10 @@ GAME_BUNDLE="${WORK_DIR}/${GAME_EXE}.app"
 LAUNCHER_BUNDLE="${WORK_DIR}/${GAME_EXE} Launcher.app"
 GAME_STAGING_DIR="staging-${KEY}-game"
 LAUNCHER_STAGING_DIR="staging-${KEY}-launcher"
-GAME_PACKAGE_DIR="${GAME_STAGING_DIR}/Links Awakening DX HD"
-LAUNCHER_PACKAGE_DIR="${LAUNCHER_STAGING_DIR}/Links Awakening DX HD"
 
 rm -rf "${WORK_DIR}" "${GAME_STAGING_DIR}" "${LAUNCHER_STAGING_DIR}"
 rm -f "final-${KEY}-game.zip" "final-${KEY}-launcher.zip"
-mkdir -p "${WORK_DIR}" "${GAME_PACKAGE_DIR}" "${LAUNCHER_PACKAGE_DIR}"
+mkdir -p "${WORK_DIR}" "${GAME_STAGING_DIR}" "${LAUNCHER_STAGING_DIR}"
 
 tar -xzf "${KEY}.tar.gz" -C "${WORK_DIR}"
 tar -xzf "launcher-${KEY}.tar.gz" -C "${WORK_DIR}"
@@ -83,17 +81,17 @@ sed -i '' \
 codesign --sign - --force --deep "${GAME_BUNDLE}"
 codesign --sign - --force --deep "${LAUNCHER_BUNDLE}"
 
-cp -RPp "${GAME_BUNDLE}" "${GAME_PACKAGE_DIR}/"
-cp -RPp "${LAUNCHER_BUNDLE}" "${LAUNCHER_PACKAGE_DIR}/"
+cp -RPp "${GAME_BUNDLE}" "${GAME_STAGING_DIR}/"
+cp -RPp "${LAUNCHER_BUNDLE}" "${LAUNCHER_STAGING_DIR}/"
 
 (
     cd "${GAME_STAGING_DIR}"
-    zip -ry "../final-${KEY}-game.zip" "Links Awakening DX HD"
+    zip -ry "../final-${KEY}-game.zip" "${GAME_EXE}.app"
 )
 
 (
     cd "${LAUNCHER_STAGING_DIR}"
-    zip -ry "../final-${KEY}-launcher.zip" "Links Awakening DX HD"
+    zip -ry "../final-${KEY}-launcher.zip" "${GAME_EXE} Launcher.app"
 )
 
 rm -rf "${WORK_DIR}" "${GAME_STAGING_DIR}" "${LAUNCHER_STAGING_DIR}"

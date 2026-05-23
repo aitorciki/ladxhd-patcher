@@ -11,21 +11,17 @@ set -euo pipefail
 WORK_DIR="work-android"
 STAGING_DIR="staging-android"
 WORK_PACKAGE_DIR="${WORK_DIR}/Links Awakening DX HD"
-PACKAGE_DIR="${STAGING_DIR}/Links Awakening DX HD"
 
 rm -rf "${WORK_DIR}" "${STAGING_DIR}"
 rm -f final-android.zip
-mkdir -p "${WORK_PACKAGE_DIR}" "${PACKAGE_DIR}"
+mkdir -p "${WORK_PACKAGE_DIR}" "${STAGING_DIR}"
 
 tar -xzf android.tar.gz -C "${WORK_PACKAGE_DIR}"
-rm -f "${WORK_PACKAGE_DIR}/_Microsoft.Android.Resource.Designer.dll"
-rm -f "${WORK_PACKAGE_DIR}/com.zelda.ladxhd.apk"
-mv "${WORK_PACKAGE_DIR}/com.zelda.ladxhd-Signed.apk" "${WORK_PACKAGE_DIR}/com.zelda.ladxhd.apk"
-mv "${WORK_PACKAGE_DIR}"/* "${PACKAGE_DIR}/"
+mv "${WORK_PACKAGE_DIR}/com.zelda.ladxhd-Signed.apk" "${STAGING_DIR}/com.zelda.ladxhd.apk"
 
 (
     cd "${STAGING_DIR}"
-    zip -r ../final-android.zip "Links Awakening DX HD"
+    zip -r ../final-android.zip com.zelda.ladxhd.apk
 )
 
 rm -rf "${WORK_DIR}" "${STAGING_DIR}"
