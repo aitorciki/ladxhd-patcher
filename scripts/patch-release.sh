@@ -6,7 +6,7 @@ set -euo pipefail
 
 ALL_KEYS=(
     windows-dx windows-gl
-    linux-x64 linux-arm64 linux-x64-appimage linux-arm64-appimage
+    linux-x64-standalone linux-arm64-standalone linux-x64-appimage linux-arm64-appimage
     macos-arm64-game macos-arm64-launcher macos-x64-game macos-x64-launcher
     android
 )
@@ -54,6 +54,8 @@ Valid platforms:
 Notes:
   Omitting --platform selects the current host platform
   On Windows, the detected default is windows-dx
+  linux-x64 maps internally to linux-x64-standalone
+  linux-arm64 maps internally to linux-arm64-standalone
   macos-arm64 maps internally to macos-arm64-game
   macos-x64 maps internally to macos-x64-game
   Output is written to ./patched/<platform>/
@@ -192,6 +194,8 @@ else
     fi
 
     case "$PLATFORM" in
+    linux-x64) KEYS=("linux-x64-standalone") ;;
+    linux-arm64) KEYS=("linux-arm64-standalone") ;;
     macos-arm64) KEYS=("macos-arm64-game") ;;
     macos-x64) KEYS=("macos-x64-game") ;;
     *) KEYS=("$PLATFORM") ;;

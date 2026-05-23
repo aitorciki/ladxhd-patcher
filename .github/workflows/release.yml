@@ -103,7 +103,7 @@ jobs:
 
       - name: Upload final packages to R2
         shell: bash
-        run: scripts/r2-upload.sh final-linux-x64.zip final-linux-arm64.zip
+        run: scripts/r2-upload.sh final-linux-x64-standalone.zip final-linux-arm64-standalone.zip
 
   finalize-linux-appimage:
     needs: [game, launcher]
@@ -232,10 +232,10 @@ jobs:
         run: |
           scripts/r2-download.sh \
             final-windows-dx.zip final-windows-gl.zip \
-            final-linux-x64.zip final-linux-arm64.zip \
+            final-linux-x64-standalone.zip final-linux-arm64-standalone.zip \
             final-linux-x64-appimage.zip final-linux-arm64-appimage.zip \
-            final-macos-arm64-game.zip final-macos-arm64-launcher.zip \
-            final-macos-x64-game.zip final-macos-x64-launcher.zip \
+            final-macos-arm64-game.zip final-macos-x64-game.zip \
+            final-macos-arm64-launcher.zip final-macos-x64-launcher.zip \
             final-android.zip
 
       - name: Compute release metadata
@@ -261,10 +261,12 @@ jobs:
         shell: bash
         run: |
           scripts/generate-xdelta-patches.sh v1.zip "$RELEASE_SUFFIX" \
-            windows-dx windows-gl linux-x64 linux-arm64 \
+            windows-dx windows-gl \
+            linux-x64-standalone linux-arm64-standalone \
             linux-x64-appimage linux-arm64-appimage \
-            macos-arm64-game macos-arm64-launcher \
-            macos-x64-game macos-x64-launcher android
+            macos-arm64-game macos-x64-game \
+            macos-arm64-launcher macos-x64-launcher \
+            android
 
       - name: Create GitHub release
         if: github.event_name == 'schedule' || inputs.trigger == 'nightly' || inputs.trigger == 'release'
@@ -278,10 +280,12 @@ jobs:
           PRERELEASE_FLAG=""
           [ "$IS_NIGHTLY" = "true" ] && PRERELEASE_FLAG="--prerelease"
           ASSETS=""
-          for key in windows-dx windows-gl linux-x64 linux-arm64 \
+          for key in windows-dx windows-gl \
+                     linux-x64-standalone linux-arm64-standalone \
                      linux-x64-appimage linux-arm64-appimage \
-                     macos-arm64-game macos-arm64-launcher \
-                     macos-x64-game macos-x64-launcher android; do
+                     macos-arm64-game macos-x64-game \
+                     macos-arm64-launcher macos-x64-launcher \
+                     android; do
             ASSETS="$ASSETS ${key}-${RELEASE_SUFFIX}.xdelta"
           done
           gh release create "$RELEASE_TAG" \
@@ -311,9 +315,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: linux-x64-build-${{ github.run_id }}
-          path: |
-            linux-x64-*.xdelta
-            !linux-x64-appimage-*.xdelta
+          path: linux-x64-standalone-*.xdelta
           archive: false
 
       - name: Upload xdelta - linux-arm64
@@ -321,9 +323,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: linux-arm64-build-${{ github.run_id }}
-          path: |
-            linux-arm64-*.xdelta
-            !linux-arm64-appimage-*.xdelta
+          path: linux-arm64-standalone-*.xdelta
           archive: false
 
       - name: Upload xdelta - linux-x64-appimage
