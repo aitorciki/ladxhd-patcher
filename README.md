@@ -25,6 +25,8 @@ This repo is an experiment to drastically reduce the size of the patches and rem
 
 You are ready, download the patch from the releases page, apply to the v1.0.0 zip, and decompress the resulting zip to play the game.
 
+If you are a bash/zsh user, a [helper script](https://github.com/aitorciki/ladxhd-patcher/blob/main/scripts/patch-release.sh) is available to automate the process.
+
 ## FAQ
 
 - **How do I update an already patched game?**  
