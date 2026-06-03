@@ -93,6 +93,27 @@ detect_host_platform() {
     esac
 }
 
+platform_for_key() {
+    case "$1" in
+    linux-x64-standalone) printf '%s\n' "linux-x64" ;;
+    linux-arm64-standalone) printf '%s\n' "linux-arm64" ;;
+    macos-arm64-game) printf '%s\n' "macos-arm64" ;;
+    macos-x64-game) printf '%s\n' "macos-x64" ;;
+    *) printf '%s\n' "$1" ;;
+    esac
+}
+
+# --- finalization functions ---
+
+# if a function named finalize_$platform is found, it will be
+# called after the patching process has succeeded, e.g.:
+
+#finalize_android() {
+#    local dir="$1"
+#    apksigner sign "${dir}/com.zelda.ladxhd.apk"
+#    rm -f "${dir}/com.zelda.ladxhd.apk.idsig"
+#}
+
 # --- argument parsing ---
 
 V1_ZIP=""
@@ -264,6 +285,13 @@ for key in "${KEYS[@]}"; do
     mkdir -p "$PLATFORM_DIR"
     unzip -qo "$PATCHED_ZIP" -d "$PLATFORM_DIR"
     rm -f "$PATCHED_ZIP"
+
+    USER_PLATFORM="$(platform_for_key "$key")"
+    FINALIZE_FN="finalize_${USER_PLATFORM//-/_}"
+    if declare -F "$FINALIZE_FN" >/dev/null; then
+        echo "Finalizing ${key}..."
+        "$FINALIZE_FN" "$PLATFORM_DIR"
+    fi
 
     echo "Done: ${PLATFORM_DIR}/"
 done
