@@ -42,7 +42,7 @@ tar -xzf "${KEY}.tar.gz" -C "${GAME_DIR}"
 tar -xzf "launcher-${KEY}.tar.gz" -C "${LAUNCHER_DIR}"
 
 cp -r "${GAME_DIR}/"* "${APPDIR}/opt/"
-cp -r "${LAUNCHER_DIR}/"* "${APPDIR}/opt/"
+cp -r "${LAUNCHER_DIR}/Launcher" "${APPDIR}/opt/"
 chmod +x "${APPDIR}/opt/Link's Awakening DX HD" "${APPDIR}/opt/Launcher"
 
 cp "${ICON_SVG}" "${APPDIR}/${DESKTOP_NAME}.svg"

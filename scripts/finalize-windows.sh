@@ -21,7 +21,8 @@ mkdir -p "${WORK_DIR}" "${PACKAGE_DIR}"
 tar -xzf "${KEY}.tar.gz" -C "${WORK_DIR}"
 tar -xzf launcher-windows.tar.gz -C "${WORK_DIR}"
 
-rm -f "${WORK_DIR}/nfd.lib" "${WORK_DIR}/nfd.pdb"
+# remove unneeded build artifacts before packaging
+rm -f "${WORK_DIR}/"*.dll.config "${WORK_DIR}/nfd.lib" "${WORK_DIR}/nfd.pdb"
 mv "${WORK_DIR}"/* "${PACKAGE_DIR}/"
 
 (

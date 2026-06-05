@@ -33,7 +33,7 @@ mkdir -p "${GAME_DIR}" "${LAUNCHER_DIR}" "${PACKAGE_DIR}"
 tar -xzf "${KEY}.tar.gz" -C "${GAME_DIR}"
 tar -xzf "launcher-${KEY}.tar.gz" -C "${LAUNCHER_DIR}"
 
-cp -r "${LAUNCHER_DIR}"/* "${GAME_DIR}/"
+cp -r "${LAUNCHER_DIR}/Launcher" "${GAME_DIR}/"
 chmod +x "${GAME_DIR}/Link's Awakening DX HD" "${GAME_DIR}/Launcher"
 mv "${GAME_DIR}"/* "${PACKAGE_DIR}/"
 
