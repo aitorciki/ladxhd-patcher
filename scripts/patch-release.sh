@@ -111,6 +111,8 @@ platform_for_key() {
 
 #finalize_android() {
 #    local dir="$1"
+#    local release="$2"
+#
 #    apksigner sign "${dir}/com.zelda.ladxhd.apk"
 #    rm -f "${dir}/com.zelda.ladxhd.apk.idsig"
 #}
@@ -313,7 +315,7 @@ for key in "${KEYS[@]}"; do
     FINALIZE_FN="finalize_${USER_PLATFORM//-/_}"
     if declare -F "$FINALIZE_FN" >/dev/null; then
         echo "Finalizing ${key}..."
-        "$FINALIZE_FN" "$PLATFORM_DIR"
+        "$FINALIZE_FN" "$PLATFORM_DIR" "$RELEASE"
     fi
 
     echo "Done: ${PLATFORM_DIR}/"
