@@ -22,14 +22,14 @@ SCRIPT_NAME="$(basename "$0")"
 
 print_usage() {
     cat <<EOF
-Usage: ${SCRIPT_NAME} --source <v1.zip> [--release <release>] [--platform <platform>]
+Usage: ${SCRIPT_NAME} --source <v1.zip> [--release <release>] [--platform <platform>]...
 
 Download and apply release xdelta patches against a v1.0.0 zip.
 
 Flags:
   -s, --source     Path to the v1.0.0 zip archive (required)
   -r, --release    Release to download patches from (default: latest)
-  -p, --platform   Platform to patch (default: current host platform)
+  -p, --platform   Platform to patch; repeat to patch multiple platforms (default: current host platform)
   -h, --help       Show this help message
 
 Valid releases:
@@ -53,6 +53,7 @@ Valid platforms:
 
 Notes:
   Omitting --platform selects the current host platform
+  Repeating --platform patches each requested platform
   On Windows, the detected default is windows-dx
   linux-x64 maps internally to linux-x64-standalone
   linux-arm64 maps internally to linux-arm64-standalone
@@ -118,7 +119,7 @@ platform_for_key() {
 
 V1_ZIP=""
 RELEASE="latest"
-PLATFORM=""
+PLATFORMS=()
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -150,7 +151,7 @@ while [ $# -gt 0 ]; do
             echo "Run '${SCRIPT_NAME} --help' for usage." >&2
             exit 1
         fi
-        PLATFORM="$2"
+        PLATFORMS+=("$2")
         shift 2
         ;;
     -*)
@@ -171,12 +172,13 @@ if [ -z "$V1_ZIP" ]; then
     exit 1
 fi
 
-if [ -z "$PLATFORM" ]; then
-    if ! PLATFORM="$(detect_host_platform)"; then
+if [ "${#PLATFORMS[@]}" -eq 0 ]; then
+    if ! HOST_PLATFORM="$(detect_host_platform)"; then
         echo "Error: could not detect a supported host platform from $(uname -s)/$(uname -m)." >&2
         echo "Specify one explicitly with '${SCRIPT_NAME} --platform <platform>' or run '${SCRIPT_NAME} --help'." >&2
         exit 1
     fi
+    PLATFORMS=("$HOST_PLATFORM")
 fi
 
 # --- tool checks ---
@@ -196,32 +198,51 @@ fi
 
 # --- determine keys to process ---
 
-if [ "$PLATFORM" = "all" ]; then
-    KEYS=("${ALL_KEYS[@]}")
-else
+KEYS=()
+ALL_PLATFORMS=false
+
+for platform in "${PLATFORMS[@]}"; do
+    if [ "$platform" = "all" ]; then
+        KEYS=("${ALL_KEYS[@]}")
+        ALL_PLATFORMS=true
+        break
+    fi
+
     VALID=false
     for valid_platform in "${VALID_PLATFORMS[@]}"; do
-        if [ "$PLATFORM" = "$valid_platform" ]; then
+        if [ "$platform" = "$valid_platform" ]; then
             VALID=true
             break
         fi
     done
 
     if [ "$VALID" != "true" ]; then
-        echo "Error: unsupported platform '$PLATFORM'." >&2
+        echo "Error: unsupported platform '$platform'." >&2
         echo "Supported platforms: all ${VALID_PLATFORMS[*]}" >&2
         echo "Run '${SCRIPT_NAME} --help' for usage." >&2
         exit 1
     fi
 
-    case "$PLATFORM" in
-    linux-x64) KEYS=("linux-x64-standalone") ;;
-    linux-arm64) KEYS=("linux-arm64-standalone") ;;
-    macos-arm64) KEYS=("macos-arm64-game") ;;
-    macos-x64) KEYS=("macos-x64-game") ;;
-    *) KEYS=("$PLATFORM") ;;
+    case "$platform" in
+    linux-x64) key="linux-x64-standalone" ;;
+    linux-arm64) key="linux-arm64-standalone" ;;
+    macos-arm64) key="macos-arm64-game" ;;
+    macos-x64) key="macos-x64-game" ;;
+    *) key="$platform" ;;
     esac
-fi
+
+    duplicate=false
+    for existing_key in "${KEYS[@]}"; do
+        if [ "$key" = "$existing_key" ]; then
+            duplicate=true
+            break
+        fi
+    done
+
+    if [ "$duplicate" != "true" ]; then
+        KEYS+=("$key")
+    fi
+done
 
 # --- resolve release tag ---
 
@@ -230,12 +251,14 @@ if [ "$RELEASE" = "latest" ]; then
     echo "Resolved latest release: $RELEASE"
 fi
 
-if [ "$PLATFORM" = "all" ]; then
+if [ "$ALL_PLATFORMS" = "true" ]; then
     echo "Preparing patches for release '${RELEASE}' on all platforms."
-elif [ "$PLATFORM" != "${KEYS[0]}" ]; then
-    echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORM}' (internal key: '${KEYS[0]}')."
+elif [ "${#PLATFORMS[@]}" -eq 1 ] && [ "${PLATFORMS[0]}" != "${KEYS[0]}" ]; then
+    echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORMS[0]}' (internal key: '${KEYS[0]}')."
+elif [ "${#PLATFORMS[@]}" -gt 1 ]; then
+    echo "Preparing patches for release '${RELEASE}' on platforms: ${PLATFORMS[*]}"
 else
-    echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORM}'."
+    echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORMS[0]}'."
 fi
 
 OUT_DIR="patched"
