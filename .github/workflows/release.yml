@@ -244,17 +244,21 @@ jobs:
         shell: bash
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ inputs.trigger }}" = "nightly" ]; then
-            echo "RELEASE_TAG=nightly" >> "$GITHUB_ENV"
-            echo "RELEASE_SUFFIX=nightly-$(date -u +%Y%m%d)" >> "$GITHUB_ENV"
-            echo "RELEASE_TITLE=Nightly ($(date -u +%Y%m%d))" >> "$GITHUB_ENV"
-            echo "RELEASE_NOTES=Automated build from run ${{ github.run_id }}" >> "$GITHUB_ENV"
-            echo "IS_NIGHTLY=true" >> "$GITHUB_ENV"
+            {
+              echo "RELEASE_TAG=nightly"
+              echo "RELEASE_SUFFIX=nightly-$(date -u +%Y%m%d)"
+              echo "RELEASE_TITLE=Nightly ($(date -u +%Y%m%d))"
+              echo "RELEASE_NOTES=Automated build from run ${{ github.run_id }}"
+              echo "IS_NIGHTLY=true"
+            } >> "$GITHUB_ENV"
           elif [ "${{ inputs.trigger }}" = "release" ]; then
-            echo "RELEASE_TAG=${{ inputs.upstream_tag }}" >> "$GITHUB_ENV"
-            echo "RELEASE_SUFFIX=${{ inputs.upstream_tag }}" >> "$GITHUB_ENV"
-            echo "RELEASE_TITLE=${{ inputs.upstream_tag }}" >> "$GITHUB_ENV"
-            echo "RELEASE_NOTES=Built from upstream release: https://github.com/BigheadSMZ/Zelda-LA-DX-HD-Updated/releases/tag/${{ inputs.upstream_tag }}" >> "$GITHUB_ENV"
-            echo "IS_NIGHTLY=false" >> "$GITHUB_ENV"
+            {
+              echo "RELEASE_TAG=${{ inputs.upstream_tag }}"
+              echo "RELEASE_SUFFIX=${{ inputs.upstream_tag }}"
+              echo "RELEASE_TITLE=${{ inputs.upstream_tag }}"
+              echo "RELEASE_NOTES=Built from upstream release: https://github.com/BigheadSMZ/Zelda-LA-DX-HD-Updated/releases/tag/${{ inputs.upstream_tag }}"
+              echo "IS_NIGHTLY=false"
+            } >> "$GITHUB_ENV"
           else
             echo "RELEASE_SUFFIX=build-${{ github.run_id }}" >> "$GITHUB_ENV"
           fi
@@ -279,22 +283,22 @@ jobs:
           if [ "$IS_NIGHTLY" = "true" ]; then
             gh release delete "$RELEASE_TAG" --yes --cleanup-tag 2>/dev/null || true
           fi
-          PRERELEASE_FLAG=""
-          [ "$IS_NIGHTLY" = "true" ] && PRERELEASE_FLAG="--prerelease"
-          ASSETS=""
+          PRERELEASE_FLAGS=()
+          [ "$IS_NIGHTLY" = "true" ] && PRERELEASE_FLAGS+=(--prerelease)
+          ASSETS=()
           for key in windows-dx windows-gl \
                      linux-x64-standalone linux-arm64-standalone \
                      linux-x64-appimage linux-arm64-appimage \
                      macos-arm64-game macos-x64-game \
                      macos-arm64-launcher macos-x64-launcher \
                      android; do
-            ASSETS="$ASSETS ${key}-${RELEASE_SUFFIX}.xdelta"
+            ASSETS+=("${key}-${RELEASE_SUFFIX}.xdelta")
           done
           gh release create "$RELEASE_TAG" \
-            $PRERELEASE_FLAG \
+            "${PRERELEASE_FLAGS[@]}" \
             --title "$RELEASE_TITLE" \
             --notes "$RELEASE_NOTES" \
-            $ASSETS
+            "${ASSETS[@]}"
 
       - name: Upload xdelta - windows-dx
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'

@@ -178,11 +178,15 @@ jobs:
         shell: bash
         working-directory: game/ladxhd_game_source_code
         run: |
-          ARGS="-c Release -f ${{ matrix.framework }} -p:PublishProfile=${{ matrix.profile }}"
+          ARGS=(-c Release -f "${{ matrix.framework }}" -p:PublishProfile="${{ matrix.profile }}")
           if [ -n "${{ matrix.rid }}" ]; then
-            ARGS="$ARGS -r ${{ matrix.rid }}"
+            ARGS+=(-r "${{ matrix.rid }}")
           fi
-          dotnet publish ${{ matrix.project }} $ARGS ${{ matrix.extra }}
+          EXTRA_ARGS=()
+          if [ -n "${{ matrix.extra }}" ]; then
+            EXTRA_ARGS+=("${{ matrix.extra }}")
+          fi
+          dotnet publish "${{ matrix.project }}" "${ARGS[@]}" "${EXTRA_ARGS[@]}"
 
       - name: Pack artifacts
         shell: bash
