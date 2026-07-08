@@ -18,16 +18,18 @@ VALID_PLATFORMS=(
     android
 )
 
+DEFAULT_V1_ZIP="Links Awakening DX HD v1.0.0.zip"
+
 SCRIPT_NAME="$(basename "$0")"
 
 print_usage() {
     cat <<EOF
-Usage: ${SCRIPT_NAME} --source <v1.zip> [--release <release>] [--platform <platform>]...
+Usage: ${SCRIPT_NAME} [--source <v1.zip>] [--release <release>] [--platform <platform>]...
 
 Download and apply release xdelta patches against a v1.0.0 zip.
 
 Flags:
-  -s, --source     Path to the v1.0.0 zip archive (required)
+  -s, --source     Path to the v1.0.0 zip archive (default: "${DEFAULT_V1_ZIP}" in the current directory)
   -r, --release    Release to download patches from (default: latest)
   -p, --platform   Platform to patch; repeat to patch multiple platforms (default: current host platform)
   -h, --help       Show this help message
@@ -170,8 +172,8 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$V1_ZIP" ]; then
-    print_usage >&2
-    exit 1
+    V1_ZIP="$DEFAULT_V1_ZIP"
+    echo "Using default source: $V1_ZIP"
 fi
 
 if [ "${#PLATFORMS[@]}" -eq 0 ]; then
