@@ -112,14 +112,13 @@ jobs:
       - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
-        uses: actions/checkout@v6
-        with:
-          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
-          ref: ${{ inputs.upstream_tag }}
-          path: game
-          sparse-checkout: |
-            icon
+      - name: Checkout bighead.0/ladxhd_updated
+        shell: bash
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse \
+            --branch "${{ inputs.upstream_tag || 'main' }}" \
+            https://gitlab.com/bighead.0/ladxhd_updated.git game
+          git -C game sparse-checkout set icon
 
       - name: Download artifacts from R2
         shell: bash
@@ -148,15 +147,16 @@ jobs:
       - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
-        uses: actions/checkout@v6
-        with:
-          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
-          ref: ${{ inputs.upstream_tag }}
-          path: game
-          sparse-checkout: |
-            icon/macos
-            Directory.Build.props
+      - name: Checkout bighead.0/ladxhd_updated
+        shell: bash
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse \
+            --branch "${{ inputs.upstream_tag || 'main' }}" \
+            https://gitlab.com/bighead.0/ladxhd_updated.git game
+          git -C game sparse-checkout set --no-cone --stdin <<'EOF'
+          /icon/macos/
+          /Directory.Build.props
+          EOF
 
       - name: Read game version
         shell: bash
@@ -256,7 +256,7 @@ jobs:
               echo "RELEASE_TAG=${{ inputs.upstream_tag }}"
               echo "RELEASE_SUFFIX=${{ inputs.upstream_tag }}"
               echo "RELEASE_TITLE=${{ inputs.upstream_tag }}"
-              echo "RELEASE_NOTES=Built from upstream release: https://github.com/BigheadSMZ/Zelda-LA-DX-HD-Updated/releases/tag/${{ inputs.upstream_tag }}"
+              echo "RELEASE_NOTES=Built from upstream release: https://gitlab.com/bighead.0/ladxhd_updated/-/releases/${{ inputs.upstream_tag }}"
               echo "IS_NIGHTLY=false"
             } >> "$GITHUB_ENV"
           else

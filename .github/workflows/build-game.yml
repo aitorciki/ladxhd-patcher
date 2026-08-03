@@ -24,17 +24,18 @@ jobs:
       - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
-        uses: actions/checkout@v6
-        with:
-          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
-          ref: ${{ inputs.game_ref }}
-          path: game
-          sparse-checkout: |
-            ladxhd_game_source_code
-            assets_patches
-            assets_original
-            LADXHD-Migrater.exe
+      - name: Checkout bighead.0/ladxhd_updated
+        shell: bash
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse \
+            --branch "${{ inputs.game_ref || 'main' }}" \
+            https://gitlab.com/bighead.0/ladxhd_updated.git game
+          git -C game sparse-checkout set --no-cone --stdin <<'EOF'
+          /ladxhd_game_source_code/
+          /assets_patches/
+          /assets_original/
+          /LADXHD-Migrater.exe
+          EOF
 
       - name: Download v1.0.0 archive
         shell: bash
@@ -45,6 +46,7 @@ jobs:
         run: |
           export PATH="/c/Program Files/7-Zip:$PATH"
           unzip v1.zip -d v1
+          mkdir game/assets_original
           cp -r "v1/Links Awakening DX HD/Data" game/assets_original/Data
           7z x "v1/Links Awakening DX HD/source.7z" -o"v1src"
           cp -r v1src/ProjectZ/Content game/assets_original/Content
@@ -135,14 +137,14 @@ jobs:
       - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
-        uses: actions/checkout@v6
-        with:
-          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
-          ref: ${{ inputs.game_ref }}
-          path: game
-          sparse-checkout: |
-            ladxhd_game_source_code
+      - name: Checkout bighead.0/ladxhd_updated
+        shell: bash
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse \
+            --branch "${{ inputs.game_ref || 'main' }}" \
+            https://gitlab.com/bighead.0/ladxhd_updated.git game
+          git -C game sparse-checkout set \
+            ladxhd_game_source_code \
             assets_patches
 
       - name: Setup .NET 8
