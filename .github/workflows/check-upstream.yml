@@ -11,13 +11,12 @@ jobs:
     permissions:
       actions: write
     steps:
-      - name: Get latest BigheadSMZ/Zelda-LA-DX-HD-Updated tag
+      - name: Get latest bighead.0/ladxhd_updated tag
         id: upstream
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG=$(gh api repos/BigheadSMZ/Zelda-LA-DX-HD-Updated/releases/latest \
-            --jq '.tag_name')
+          TAG=$(curl -fsSL \
+            'https://gitlab.com/api/v4/projects/bighead.0%2Fladxhd_updated/repository/tags?order_by=updated&sort=desc&per_page=1' \
+            | jq -r '.[0].name // empty')
           [ -n "$TAG" ] || { echo "No upstream tag found, skipping."; exit 0; }
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 

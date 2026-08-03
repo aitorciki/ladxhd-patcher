@@ -1,6 +1,6 @@
 # ladxhd-patcher
 
-An experimental alternative patching mechanism for [BigheadSMZ/Zelda-LA-DX-HD-Updated](https://github.com/BigheadSMZ/Zelda-LA-DX-HD-Updated).
+An experimental alternative patching mechanism for [LADXHD Updated](https://gitlab.com/bighead.0/ladxhd_updated).
 
 ## What is this?
 

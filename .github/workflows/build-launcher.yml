@@ -51,14 +51,13 @@ jobs:
       - name: Checkout ladxhd-patcher
         uses: actions/checkout@v6
 
-      - name: Checkout BigheadSMZ/Zelda-LA-DX-HD-Updated
-        uses: actions/checkout@v6
-        with:
-          repository: BigheadSMZ/Zelda-LA-DX-HD-Updated
-          ref: ${{ inputs.game_ref }}
-          path: game
-          sparse-checkout: |
-            ladxhd_launcher_source_code
+      - name: Checkout bighead.0/ladxhd_updated
+        shell: bash
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse \
+            --branch "${{ inputs.game_ref || 'main' }}" \
+            https://gitlab.com/bighead.0/ladxhd_updated.git game
+          git -C game sparse-checkout set ladxhd_launcher_source_code
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v5
