@@ -40,13 +40,9 @@ cp -p "${WORK_DIR}/${GAME_EXE}" "${GAME_BUNDLE}/Contents/MacOS/"
 cp -p "${WORK_DIR}/Launcher" "${GAME_BUNDLE}/Contents/MacOS/"
 cp -p "${ICON_SRC}" "${GAME_BUNDLE}/Contents/Resources/Icon.icns"
 for dylib in "${WORK_DIR}"/*.dylib; do
-  [ -e "${dylib}" ] || continue
-  cp -p "${dylib}" "${GAME_BUNDLE}/Contents/MacOS/"
+    [ -e "${dylib}" ] || continue
+    cp -p "${dylib}" "${GAME_BUNDLE}/Contents/MacOS/"
 done
-# upstream has introduced a Steam Deck workaround that dynamically loads SDL2,
-# since the distributed SDL2 dylib in macOS uses a different name a symlink is
-# needed to avoid crashing
-ln -sf "./libSDL2-2.0.0.dylib" "${GAME_BUNDLE}/Contents/MacOS/libSDL2.dylib"
 cp -Rp "${WORK_DIR}/Data" "${GAME_BUNDLE}/Contents/MacOS/"
 cp -Rp "${WORK_DIR}/Content" "${GAME_BUNDLE}/Contents/MacOS/"
 [ -d "${WORK_DIR}/Mods" ] && cp -Rp "${WORK_DIR}/Mods" "${GAME_BUNDLE}/Contents/MacOS/"
@@ -78,9 +74,9 @@ EOF
 
 cp -Rp "${GAME_BUNDLE}" "${LAUNCHER_BUNDLE}"
 sed -i '' \
-  -e "s|<string>${GAME_EXE}</string>|<string>Launcher</string>|g" \
-  -e "s|com\.projectz\.game|com.projectz.launcher|g" \
-  "${LAUNCHER_BUNDLE}/Contents/Info.plist"
+    -e "s|<string>${GAME_EXE}</string>|<string>Launcher</string>|g" \
+    -e "s|com\.projectz\.game|com.projectz.launcher|g" \
+    "${LAUNCHER_BUNDLE}/Contents/Info.plist"
 
 codesign --sign - --force --deep "${GAME_BUNDLE}"
 codesign --sign - --force --deep "${LAUNCHER_BUNDLE}"
@@ -89,13 +85,13 @@ cp -RPp "${GAME_BUNDLE}" "${GAME_STAGING_DIR}/"
 cp -RPp "${LAUNCHER_BUNDLE}" "${LAUNCHER_STAGING_DIR}/"
 
 (
-  cd "${GAME_STAGING_DIR}"
-  zip -ry "../final-${KEY}-game.zip" "${GAME_EXE}.app"
+    cd "${GAME_STAGING_DIR}"
+    zip -ry "../final-${KEY}-game.zip" "${GAME_EXE}.app"
 )
 
 (
-  cd "${LAUNCHER_STAGING_DIR}"
-  zip -ry "../final-${KEY}-launcher.zip" "${GAME_EXE} Launcher.app"
+    cd "${LAUNCHER_STAGING_DIR}"
+    zip -ry "../final-${KEY}-launcher.zip" "${GAME_EXE} Launcher.app"
 )
 
 rm -rf "${WORK_DIR}" "${GAME_STAGING_DIR}" "${LAUNCHER_STAGING_DIR}"
