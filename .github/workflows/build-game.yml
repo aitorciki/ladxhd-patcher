@@ -168,6 +168,9 @@ jobs:
         working-directory: game/ladxhd_game_source_code
         run: dotnet workload restore
 
+      - name: Setup FFmpeg
+        uses: AnimMouse/setup-ffmpeg@v1
+
       - name: Download migrated assets from R2
         shell: bash
         run: scripts/r2-download.sh migrated-source.tar.gz
