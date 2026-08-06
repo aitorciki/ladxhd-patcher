@@ -176,6 +176,9 @@ jobs:
         shell: bash
         run: tar -xzf migrated-source.tar.gz -C game/ladxhd_game_source_code
 
+      - name: Setup FFmpeg
+        uses: AnimMouse/setup-ffmpeg@v1
+
       - name: Publish
         shell: bash
         working-directory: game/ladxhd_game_source_code
