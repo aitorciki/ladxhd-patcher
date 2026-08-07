@@ -20,8 +20,8 @@ tar -xzf android.tar.gz -C "${WORK_PACKAGE_DIR}"
 mv "${WORK_PACKAGE_DIR}/com.zelda.ladxhd-Signed.apk" "${STAGING_DIR}/com.zelda.ladxhd.apk"
 
 (
-    cd "${STAGING_DIR}"
-    zip -r ../final-android.zip com.zelda.ladxhd.apk
+  cd "${STAGING_DIR}"
+  zip -r ../final-android.zip com.zelda.ladxhd.apk
 )
 
 rm -rf "${WORK_DIR}" "${STAGING_DIR}"

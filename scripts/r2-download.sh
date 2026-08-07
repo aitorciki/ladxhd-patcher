@@ -22,14 +22,14 @@ set -euo pipefail
 MAX_ATTEMPTS=3
 
 for basename in "$@"; do
-    n=0
-    until aws s3 cp "s3://${R2_BUCKET}/${RUN_ID}/${basename}.gpg" "${basename}.gpg"; do
-        n=$((n + 1))
-        [ "$n" -ge "$MAX_ATTEMPTS" ] && echo "Download failed after ${MAX_ATTEMPTS} attempts: ${basename}.gpg" >&2 && exit 1
-        echo "Retrying download (attempt $((n + 1))/${MAX_ATTEMPTS})..." >&2
-        rm -f "${basename}.gpg"
-        sleep $((n * 5))
-    done
-    gpg --decrypt --batch --passphrase "${ASSET_ENCRYPTION_KEY}" "${basename}.gpg" >"${basename}"
+  n=0
+  until aws s3 cp "s3://${R2_BUCKET}/${RUN_ID}/${basename}.gpg" "${basename}.gpg"; do
+    n=$((n + 1))
+    [ "$n" -ge "$MAX_ATTEMPTS" ] && echo "Download failed after ${MAX_ATTEMPTS} attempts: ${basename}.gpg" >&2 && exit 1
+    echo "Retrying download (attempt $((n + 1))/${MAX_ATTEMPTS})..." >&2
     rm -f "${basename}.gpg"
+    sleep $((n * 5))
+  done
+  gpg --decrypt --batch --passphrase "${ASSET_ENCRYPTION_KEY}" "${basename}.gpg" >"${basename}"
+  rm -f "${basename}.gpg"
 done

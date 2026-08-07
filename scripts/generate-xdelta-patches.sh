@@ -13,20 +13,20 @@ shift 2
 NPROC=$(nproc)
 
 generate_one() {
-    local key="$1"
-    echo "Generating patch for ${key}..."
-    xdelta3 -e -s "${SOURCE}" "final-${key}.zip" "${key}-${SUFFIX}.xdelta"
-    echo "Done: ${key}-${SUFFIX}.xdelta"
+  local key="$1"
+  echo "Generating patch for ${key}..."
+  xdelta3 -e -s "${SOURCE}" "final-${key}.zip" "${key}-${SUFFIX}.xdelta"
+  echo "Done: ${key}-${SUFFIX}.xdelta"
 }
 
 # Launch up to NPROC concurrent jobs, queuing the rest.
 for key in "$@"; do
-    generate_one "$key" &
+  generate_one "$key" &
 
-    # If we've reached the concurrency limit, wait for at least one job to finish.
-    if [ "$(jobs -r | wc -l)" -ge "$NPROC" ]; then
-        wait -n
-    fi
+  # If we've reached the concurrency limit, wait for at least one job to finish.
+  if [ "$(jobs -r | wc -l)" -ge "$NPROC" ]; then
+    wait -n
+  fi
 done
 
 # Wait for all remaining jobs.

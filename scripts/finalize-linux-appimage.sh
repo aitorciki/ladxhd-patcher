@@ -29,9 +29,9 @@ case "${KEY}" in
 linux-x64) ARCH=x86_64 ;;
 linux-arm64) ARCH=aarch64 ;;
 *)
-    echo "Unknown key: ${KEY}"
-    exit 1
-    ;;
+  echo "Unknown key: ${KEY}"
+  exit 1
+  ;;
 esac
 
 rm -rf "${WORK_DIR}" "${APPDIR}"
@@ -69,13 +69,13 @@ EOF
 chmod +x "${APPDIR}/AppRun"
 
 if [ ! -f appimagetool-x86_64.AppImage ]; then
-    curl -fLO --retry 3 --retry-all-errors --retry-delay 5 \
-        "https://github.com/AppImage/appimagetool/releases/latest/download/appimagetool-x86_64.AppImage"
-    chmod +x appimagetool-x86_64.AppImage
+  curl -fLO --retry 3 --retry-all-errors --retry-delay 5 \
+    "https://github.com/AppImage/appimagetool/releases/latest/download/appimagetool-x86_64.AppImage"
+  chmod +x appimagetool-x86_64.AppImage
 fi
 
 ARCH="${ARCH}" ./appimagetool-x86_64.AppImage --appimage-extract-and-run \
-    "${APPDIR}" "${APPIMAGE_NAME}"
+  "${APPDIR}" "${APPIMAGE_NAME}"
 
 zip "final-${KEY}-appimage.zip" "${APPIMAGE_NAME}"
 

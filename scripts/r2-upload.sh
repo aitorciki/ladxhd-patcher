@@ -23,13 +23,13 @@ set -euo pipefail
 MAX_ATTEMPTS=3
 
 for basename in "$@"; do
-    gpg --symmetric --cipher-algo AES256 --batch --passphrase "${ASSET_ENCRYPTION_KEY}" "${basename}"
-    n=0
-    until aws s3 cp "${basename}.gpg" "s3://${R2_BUCKET}/${RUN_ID}/${basename}.gpg"; do
-        n=$((n + 1))
-        [ "$n" -ge "$MAX_ATTEMPTS" ] && echo "Upload failed after ${MAX_ATTEMPTS} attempts: ${basename}.gpg" >&2 && exit 1
-        echo "Retrying upload (attempt $((n + 1))/${MAX_ATTEMPTS})..." >&2
-        sleep $((n * 5))
-    done
-    rm -f "${basename}.gpg"
+  gpg --symmetric --cipher-algo AES256 --batch --passphrase "${ASSET_ENCRYPTION_KEY}" "${basename}"
+  n=0
+  until aws s3 cp "${basename}.gpg" "s3://${R2_BUCKET}/${RUN_ID}/${basename}.gpg"; do
+    n=$((n + 1))
+    [ "$n" -ge "$MAX_ATTEMPTS" ] && echo "Upload failed after ${MAX_ATTEMPTS} attempts: ${basename}.gpg" >&2 && exit 1
+    echo "Retrying upload (attempt $((n + 1))/${MAX_ATTEMPTS})..." >&2
+    sleep $((n * 5))
+  done
+  rm -f "${basename}.gpg"
 done

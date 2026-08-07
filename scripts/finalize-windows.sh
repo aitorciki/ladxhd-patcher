@@ -26,8 +26,8 @@ rm -f "${WORK_DIR}/"*.dll.config "${WORK_DIR}/nfd.lib" "${WORK_DIR}/nfd.pdb"
 mv "${WORK_DIR}"/* "${PACKAGE_DIR}/"
 
 (
-    cd "${STAGING_DIR}"
-    7z a -r "../final-${KEY}.zip" "Links Awakening DX HD"
+  cd "${STAGING_DIR}"
+  7z a -r "../final-${KEY}.zip" "Links Awakening DX HD"
 )
 
 rm -rf "${WORK_DIR}" "${STAGING_DIR}"

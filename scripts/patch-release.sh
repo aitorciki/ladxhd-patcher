@@ -5,17 +5,17 @@ set -euo pipefail
 # Download and apply release xdelta patches against a v1.0.0 zip.
 
 ALL_KEYS=(
-    windows-dx windows-gl
-    linux-x64-standalone linux-arm64-standalone linux-x64-appimage linux-arm64-appimage
-    macos-arm64-game macos-arm64-launcher macos-x64-game macos-x64-launcher
-    android
+  windows-dx windows-gl
+  linux-x64-standalone linux-arm64-standalone linux-x64-appimage linux-arm64-appimage
+  macos-arm64-game macos-arm64-launcher macos-x64-game macos-x64-launcher
+  android
 )
 
 VALID_PLATFORMS=(
-    windows-dx windows-gl
-    linux-x64 linux-arm64 linux-x64-appimage linux-arm64-appimage
-    macos-arm64 macos-arm64-launcher macos-x64 macos-x64-launcher
-    android
+  windows-dx windows-gl
+  linux-x64 linux-arm64 linux-x64-appimage linux-arm64-appimage
+  macos-arm64 macos-arm64-launcher macos-x64 macos-x64-launcher
+  android
 )
 
 DEFAULT_V1_ZIP="Links Awakening DX HD v1.0.0.zip"
@@ -23,7 +23,7 @@ DEFAULT_V1_ZIP="Links Awakening DX HD v1.0.0.zip"
 SCRIPT_NAME="$(basename "$0")"
 
 print_usage() {
-    cat <<EOF
+  cat <<EOF
 Usage: ${SCRIPT_NAME} [--source <v1.zip>] [--release <release>] [--platform <platform>]...
 
 Download and apply release xdelta patches against a v1.0.0 zip.
@@ -67,43 +67,43 @@ EOF
 }
 
 detect_host_platform() {
-    local os arch
+  local os arch
 
-    os="$(uname -s)"
-    arch="$(uname -m)"
+  os="$(uname -s)"
+  arch="$(uname -m)"
 
-    case "$os" in
-    Darwin)
-        case "$arch" in
-        arm64) printf '%s\n' "macos-arm64" ;;
-        x86_64) printf '%s\n' "macos-x64" ;;
-        *) return 1 ;;
-        esac
-        ;;
-    Linux)
-        case "$arch" in
-        x86_64) printf '%s\n' "linux-x64" ;;
-        aarch64 | arm64) printf '%s\n' "linux-arm64" ;;
-        *) return 1 ;;
-        esac
-        ;;
-    MINGW* | MSYS* | CYGWIN*)
-        printf '%s\n' "windows-dx"
-        ;;
-    *)
-        return 1
-        ;;
+  case "$os" in
+  Darwin)
+    case "$arch" in
+    arm64) printf '%s\n' "macos-arm64" ;;
+    x86_64) printf '%s\n' "macos-x64" ;;
+    *) return 1 ;;
     esac
+    ;;
+  Linux)
+    case "$arch" in
+    x86_64) printf '%s\n' "linux-x64" ;;
+    aarch64 | arm64) printf '%s\n' "linux-arm64" ;;
+    *) return 1 ;;
+    esac
+    ;;
+  MINGW* | MSYS* | CYGWIN*)
+    printf '%s\n' "windows-dx"
+    ;;
+  *)
+    return 1
+    ;;
+  esac
 }
 
 platform_for_key() {
-    case "$1" in
-    linux-x64-standalone) printf '%s\n' "linux-x64" ;;
-    linux-arm64-standalone) printf '%s\n' "linux-arm64" ;;
-    macos-arm64-game) printf '%s\n' "macos-arm64" ;;
-    macos-x64-game) printf '%s\n' "macos-x64" ;;
-    *) printf '%s\n' "$1" ;;
-    esac
+  case "$1" in
+  linux-x64-standalone) printf '%s\n' "linux-x64" ;;
+  linux-arm64-standalone) printf '%s\n' "linux-arm64" ;;
+  macos-arm64-game) printf '%s\n' "macos-arm64" ;;
+  macos-x64-game) printf '%s\n' "macos-x64" ;;
+  *) printf '%s\n' "$1" ;;
+  esac
 }
 
 # --- finalization functions ---
@@ -126,78 +126,78 @@ RELEASE="latest"
 PLATFORMS=()
 
 while [ $# -gt 0 ]; do
-    case "$1" in
-    -h | --help)
-        print_usage
-        exit 0
-        ;;
-    -s | --source)
-        if [ $# -lt 2 ]; then
-            echo "Error: missing value for '$1'." >&2
-            echo "Run '${SCRIPT_NAME} --help' for usage." >&2
-            exit 1
-        fi
-        V1_ZIP="$2"
-        shift 2
-        ;;
-    -r | --release)
-        if [ $# -lt 2 ]; then
-            echo "Error: missing value for '$1'." >&2
-            echo "Run '${SCRIPT_NAME} --help' for usage." >&2
-            exit 1
-        fi
-        RELEASE="$2"
-        shift 2
-        ;;
-    -p | --platform)
-        if [ $# -lt 2 ]; then
-            echo "Error: missing value for '$1'." >&2
-            echo "Run '${SCRIPT_NAME} --help' for usage." >&2
-            exit 1
-        fi
-        PLATFORMS+=("$2")
-        shift 2
-        ;;
-    -*)
-        echo "Error: unknown option '$1'." >&2
-        echo "Run '${SCRIPT_NAME} --help' for usage." >&2
-        exit 1
-        ;;
-    *)
-        echo "Error: unexpected positional argument '$1'." >&2
-        echo "Run '${SCRIPT_NAME} --help' for usage." >&2
-        exit 1
-        ;;
-    esac
+  case "$1" in
+  -h | --help)
+    print_usage
+    exit 0
+    ;;
+  -s | --source)
+    if [ $# -lt 2 ]; then
+      echo "Error: missing value for '$1'." >&2
+      echo "Run '${SCRIPT_NAME} --help' for usage." >&2
+      exit 1
+    fi
+    V1_ZIP="$2"
+    shift 2
+    ;;
+  -r | --release)
+    if [ $# -lt 2 ]; then
+      echo "Error: missing value for '$1'." >&2
+      echo "Run '${SCRIPT_NAME} --help' for usage." >&2
+      exit 1
+    fi
+    RELEASE="$2"
+    shift 2
+    ;;
+  -p | --platform)
+    if [ $# -lt 2 ]; then
+      echo "Error: missing value for '$1'." >&2
+      echo "Run '${SCRIPT_NAME} --help' for usage." >&2
+      exit 1
+    fi
+    PLATFORMS+=("$2")
+    shift 2
+    ;;
+  -*)
+    echo "Error: unknown option '$1'." >&2
+    echo "Run '${SCRIPT_NAME} --help' for usage." >&2
+    exit 1
+    ;;
+  *)
+    echo "Error: unexpected positional argument '$1'." >&2
+    echo "Run '${SCRIPT_NAME} --help' for usage." >&2
+    exit 1
+    ;;
+  esac
 done
 
 if [ -z "$V1_ZIP" ]; then
-    V1_ZIP="$DEFAULT_V1_ZIP"
-    echo "Using default source: $V1_ZIP"
+  V1_ZIP="$DEFAULT_V1_ZIP"
+  echo "Using default source: $V1_ZIP"
 fi
 
 if [ "${#PLATFORMS[@]}" -eq 0 ]; then
-    if ! HOST_PLATFORM="$(detect_host_platform)"; then
-        echo "Error: could not detect a supported host platform from $(uname -s)/$(uname -m)." >&2
-        echo "Specify one explicitly with '${SCRIPT_NAME} --platform <platform>' or run '${SCRIPT_NAME} --help'." >&2
-        exit 1
-    fi
-    PLATFORMS=("$HOST_PLATFORM")
+  if ! HOST_PLATFORM="$(detect_host_platform)"; then
+    echo "Error: could not detect a supported host platform from $(uname -s)/$(uname -m)." >&2
+    echo "Specify one explicitly with '${SCRIPT_NAME} --platform <platform>' or run '${SCRIPT_NAME} --help'." >&2
+    exit 1
+  fi
+  PLATFORMS=("$HOST_PLATFORM")
 fi
 
 # --- tool checks ---
 
 for tool in gh xdelta3 unzip; do
-    if ! command -v "$tool" &>/dev/null; then
-        echo "Error: required tool '$tool' not found in PATH." >&2
-        exit 1
-    fi
+  if ! command -v "$tool" &>/dev/null; then
+    echo "Error: required tool '$tool' not found in PATH." >&2
+    exit 1
+  fi
 done
 
 if [ ! -f "$V1_ZIP" ]; then
-    echo "Error: v1.0.0 zip not found: $V1_ZIP" >&2
-    echo "Run '${SCRIPT_NAME} --help' for usage." >&2
-    exit 1
+  echo "Error: v1.0.0 zip not found: $V1_ZIP" >&2
+  echo "Run '${SCRIPT_NAME} --help' for usage." >&2
+  exit 1
 fi
 
 # --- determine keys to process ---
@@ -206,63 +206,63 @@ KEYS=()
 ALL_PLATFORMS=false
 
 for platform in "${PLATFORMS[@]}"; do
-    if [ "$platform" = "all" ]; then
-        KEYS=("${ALL_KEYS[@]}")
-        ALL_PLATFORMS=true
-        break
+  if [ "$platform" = "all" ]; then
+    KEYS=("${ALL_KEYS[@]}")
+    ALL_PLATFORMS=true
+    break
+  fi
+
+  VALID=false
+  for valid_platform in "${VALID_PLATFORMS[@]}"; do
+    if [ "$platform" = "$valid_platform" ]; then
+      VALID=true
+      break
     fi
+  done
 
-    VALID=false
-    for valid_platform in "${VALID_PLATFORMS[@]}"; do
-        if [ "$platform" = "$valid_platform" ]; then
-            VALID=true
-            break
-        fi
-    done
+  if [ "$VALID" != "true" ]; then
+    echo "Error: unsupported platform '$platform'." >&2
+    echo "Supported platforms: all ${VALID_PLATFORMS[*]}" >&2
+    echo "Run '${SCRIPT_NAME} --help' for usage." >&2
+    exit 1
+  fi
 
-    if [ "$VALID" != "true" ]; then
-        echo "Error: unsupported platform '$platform'." >&2
-        echo "Supported platforms: all ${VALID_PLATFORMS[*]}" >&2
-        echo "Run '${SCRIPT_NAME} --help' for usage." >&2
-        exit 1
+  case "$platform" in
+  linux-x64) key="linux-x64-standalone" ;;
+  linux-arm64) key="linux-arm64-standalone" ;;
+  macos-arm64) key="macos-arm64-game" ;;
+  macos-x64) key="macos-x64-game" ;;
+  *) key="$platform" ;;
+  esac
+
+  duplicate=false
+  for existing_key in "${KEYS[@]}"; do
+    if [ "$key" = "$existing_key" ]; then
+      duplicate=true
+      break
     fi
+  done
 
-    case "$platform" in
-    linux-x64) key="linux-x64-standalone" ;;
-    linux-arm64) key="linux-arm64-standalone" ;;
-    macos-arm64) key="macos-arm64-game" ;;
-    macos-x64) key="macos-x64-game" ;;
-    *) key="$platform" ;;
-    esac
-
-    duplicate=false
-    for existing_key in "${KEYS[@]}"; do
-        if [ "$key" = "$existing_key" ]; then
-            duplicate=true
-            break
-        fi
-    done
-
-    if [ "$duplicate" != "true" ]; then
-        KEYS+=("$key")
-    fi
+  if [ "$duplicate" != "true" ]; then
+    KEYS+=("$key")
+  fi
 done
 
 # --- resolve release tag ---
 
 if [ "$RELEASE" = "latest" ]; then
-    RELEASE=$(gh release view --repo aitorciki/ladxhd-patcher --json tagName --jq '.tagName')
-    echo "Resolved latest release: $RELEASE"
+  RELEASE=$(gh release view --repo aitorciki/ladxhd-patcher --json tagName --jq '.tagName')
+  echo "Resolved latest release: $RELEASE"
 fi
 
 if [ "$ALL_PLATFORMS" = "true" ]; then
-    echo "Preparing patches for release '${RELEASE}' on all platforms."
+  echo "Preparing patches for release '${RELEASE}' on all platforms."
 elif [ "${#PLATFORMS[@]}" -eq 1 ] && [ "${PLATFORMS[0]}" != "${KEYS[0]}" ]; then
-    echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORMS[0]}' (internal key: '${KEYS[0]}')."
+  echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORMS[0]}' (internal key: '${KEYS[0]}')."
 elif [ "${#PLATFORMS[@]}" -gt 1 ]; then
-    echo "Preparing patches for release '${RELEASE}' on platforms: ${PLATFORMS[*]}"
+  echo "Preparing patches for release '${RELEASE}' on platforms: ${PLATFORMS[*]}"
 else
-    echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORMS[0]}'."
+  echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORMS[0]}'."
 fi
 
 OUT_DIR="patched"
@@ -270,7 +270,7 @@ PATCH_DIR="$(mktemp -d "${TMPDIR:-/tmp}/patch-release.XXXXXX")"
 mkdir -p "$OUT_DIR"
 
 cleanup() {
-    rm -rf "$PATCH_DIR"
+  rm -rf "$PATCH_DIR"
 }
 
 trap cleanup EXIT
@@ -281,46 +281,46 @@ TOTAL_KEYS="${#KEYS[@]}"
 INDEX=0
 
 for key in "${KEYS[@]}"; do
-    INDEX=$((INDEX + 1))
-    echo "Downloading artifact ${INDEX}/${TOTAL_KEYS}: ${key}..."
-    if ! gh release download "$RELEASE" \
-        --repo aitorciki/ladxhd-patcher \
-        --pattern "${key}-*.xdelta" \
-        --dir "$PATCH_DIR" \
-        --clobber 2>/dev/null; then
-        echo "Warning: no patch available for '${key}' in release '${RELEASE}', skipping." >&2
-    fi
+  INDEX=$((INDEX + 1))
+  echo "Downloading artifact ${INDEX}/${TOTAL_KEYS}: ${key}..."
+  if ! gh release download "$RELEASE" \
+    --repo aitorciki/ladxhd-patcher \
+    --pattern "${key}-*.xdelta" \
+    --dir "$PATCH_DIR" \
+    --clobber 2>/dev/null; then
+    echo "Warning: no patch available for '${key}' in release '${RELEASE}', skipping." >&2
+  fi
 done
 
 # --- apply patches ---
 
 for key in "${KEYS[@]}"; do
-    PATCH=$(find "$PATCH_DIR" -maxdepth 1 -name "${key}-*.xdelta" | head -1)
-    if [ -z "$PATCH" ]; then
-        echo "Warning: no patch found for '${key}', skipping." >&2
-        continue
-    fi
+  PATCH=$(find "$PATCH_DIR" -maxdepth 1 -name "${key}-*.xdelta" | head -1)
+  if [ -z "$PATCH" ]; then
+    echo "Warning: no patch found for '${key}', skipping." >&2
+    continue
+  fi
 
-    PLATFORM_DIR="${OUT_DIR}/${key}"
-    PATCHED_ZIP="${OUT_DIR}/${key}.zip"
+  PLATFORM_DIR="${OUT_DIR}/${key}"
+  PATCHED_ZIP="${OUT_DIR}/${key}.zip"
 
-    echo "Patching ${key}..."
-    xdelta3 -d -s "$V1_ZIP" "$PATCH" "$PATCHED_ZIP"
+  echo "Patching ${key}..."
+  xdelta3 -d -s "$V1_ZIP" "$PATCH" "$PATCHED_ZIP"
 
-    echo "Unpacking ${key}..."
-    rm -rf "$PLATFORM_DIR"
-    mkdir -p "$PLATFORM_DIR"
-    unzip -qo "$PATCHED_ZIP" -d "$PLATFORM_DIR"
-    rm -f "$PATCHED_ZIP"
+  echo "Unpacking ${key}..."
+  rm -rf "$PLATFORM_DIR"
+  mkdir -p "$PLATFORM_DIR"
+  unzip -qo "$PATCHED_ZIP" -d "$PLATFORM_DIR"
+  rm -f "$PATCHED_ZIP"
 
-    USER_PLATFORM="$(platform_for_key "$key")"
-    FINALIZE_FN="finalize_${USER_PLATFORM//-/_}"
-    if declare -F "$FINALIZE_FN" >/dev/null; then
-        echo "Finalizing ${key}..."
-        "$FINALIZE_FN" "$PLATFORM_DIR" "$RELEASE"
-    fi
+  USER_PLATFORM="$(platform_for_key "$key")"
+  FINALIZE_FN="finalize_${USER_PLATFORM//-/_}"
+  if declare -F "$FINALIZE_FN" >/dev/null; then
+    echo "Finalizing ${key}..."
+    "$FINALIZE_FN" "$PLATFORM_DIR" "$RELEASE"
+  fi
 
-    echo "Done: ${PLATFORM_DIR}/"
+  echo "Done: ${PLATFORM_DIR}/"
 done
 
 echo "All done. Output in ${OUT_DIR}/"

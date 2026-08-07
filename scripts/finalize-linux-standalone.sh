@@ -15,9 +15,9 @@ case "${KEY}" in
 linux-x64) OUTPUT_KEY="linux-x64-standalone" ;;
 linux-arm64) OUTPUT_KEY="linux-arm64-standalone" ;;
 *)
-    echo "Unknown key: ${KEY}" >&2
-    exit 1
-    ;;
+  echo "Unknown key: ${KEY}" >&2
+  exit 1
+  ;;
 esac
 
 WORK_DIR="work-${KEY}"
@@ -38,8 +38,8 @@ chmod +x "${GAME_DIR}/Link's Awakening DX HD" "${GAME_DIR}/Launcher"
 mv "${GAME_DIR}"/* "${PACKAGE_DIR}/"
 
 (
-    cd "${STAGING_DIR}"
-    zip -r "../final-${OUTPUT_KEY}.zip" "Links Awakening DX HD"
+  cd "${STAGING_DIR}"
+  zip -r "../final-${OUTPUT_KEY}.zip" "Links Awakening DX HD"
 )
 
 rm -rf "${WORK_DIR}" "${STAGING_DIR}"
