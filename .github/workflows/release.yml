@@ -407,7 +407,7 @@ jobs:
     permissions:
       actions: write
     steps:
-      - name: Delete old caches (keep last 3)
+      - name: Delete old caches (keep last 4)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -415,7 +415,7 @@ jobs:
             --repo ${{ github.repository }} \
             --limit 1000 \
             --json key,lastAccessedAt \
-            --jq '. | sort_by(.lastAccessedAt) | reverse | .[3:] | .[].key' | \
+            --jq '. | sort_by(.lastAccessedAt) | reverse | .[4:] | .[].key' | \
           while IFS= read -r key; do
             [ -n "$key" ] && gh cache delete "$key" --repo ${{ github.repository }} || true
           done
