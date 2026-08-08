@@ -85,49 +85,49 @@ jobs:
         include:
           - key: windows-dx
             project: ProjectZ.Desktop/ProjectZ.Desktop.csproj
-            framework: net8.0-windows
+            framework: net9.0-windows
             rid: win-x64
             profile: FolderProfile_DX
             output: "~Publish/Windows-DX"
             extra: ""
           - key: windows-gl
             project: ProjectZ.Desktop/ProjectZ.Desktop.csproj
-            framework: net8.0
+            framework: net9.0
             rid: win-x64
             profile: FolderProfile_GL
             output: "~Publish/Windows-GL"
             extra: ""
           - key: android
             project: ProjectZ.Android/ProjectZ.Android.csproj
-            framework: net8.0-android
+            framework: net9.0-android
             rid: ""
             profile: FolderProfile_Android
             output: "~Publish/Android"
             extra: "-p:EnableAndroidTargeting=true"
           - key: linux-x64
             project: ProjectZ.Linux/ProjectZ.Linux.csproj
-            framework: net8.0
+            framework: net9.0
             rid: linux-x64
             profile: FolderProfile_Linux
             output: "~Publish/Linux-x86_64"
             extra: ""
           - key: linux-arm64
             project: ProjectZ.Linux/ProjectZ.Linux.csproj
-            framework: net8.0
+            framework: net9.0
             rid: linux-arm64
             profile: FolderProfile_Linux_Arm
             output: "~Publish/Linux-Arm64"
             extra: ""
           - key: macos-arm64
             project: ProjectZ.MacOS/ProjectZ.MacOS.csproj
-            framework: net8.0
+            framework: net9.0
             rid: osx-arm64
             profile: FolderProfile_MacOS
             output: "~Publish/MacOS-Arm64"
             extra: ""
           - key: macos-x64
             project: ProjectZ.MacOS/ProjectZ.MacOS.csproj
-            framework: net8.0
+            framework: net9.0
             rid: osx-x64
             profile: FolderProfile_MacOS_x64
             output: "~Publish/MacOS-x86_64"
@@ -147,16 +147,16 @@ jobs:
             ladxhd_game_source_code \
             assets_patches
 
-      - name: Setup .NET 8
+      - name: Setup .NET 9
         id: setup-dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "9.0.x"
 
       - name: Cache NuGet packages
         uses: actions/cache@v5
         env:
-          CACHE_GROUP: ${{ matrix.framework == 'net8.0' && 'net8.0-gl' || matrix.framework }}
+          CACHE_GROUP: ${{ matrix.framework == 'net9.0' && 'net9.0-gl' || matrix.framework }}
         with:
           path: ~/.nuget/packages
           key: nuget-game-${{ env.CACHE_GROUP }}-${{ hashFiles('game/**/*.csproj') }}

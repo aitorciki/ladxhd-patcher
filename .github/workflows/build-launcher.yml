@@ -59,10 +59,10 @@ jobs:
             https://gitlab.com/bighead.0/ladxhd_updated.git game
           git -C game sparse-checkout set ladxhd_launcher_source_code
 
-      - name: Setup .NET 8
+      - name: Setup .NET 9
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "9.0.x"
 
       - name: Publish
         shell: bash
