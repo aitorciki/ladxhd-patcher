@@ -24,7 +24,7 @@ SCRIPT_NAME="$(basename "$0")"
 
 print_usage() {
   cat <<EOF
-Usage: ${SCRIPT_NAME} [--source <v1.zip>] [--release <release>] [--platform <platform>]...
+Usage: ${SCRIPT_NAME} [--source <v1.zip>] [--release <release>] [--platform <platform>]... [--enable-mods]
 
 Download and apply release xdelta patches against a v1.0.0 zip.
 
@@ -32,6 +32,7 @@ Flags:
   -s, --source     Path to the v1.0.0 zip archive (default: "${DEFAULT_V1_ZIP}" in the current directory)
   -r, --release    Release to download patches from (default: latest)
   -p, --platform   Platform to patch; repeat to patch multiple platforms (default: current host platform)
+  --enable-mods    Flatten v1.0.0 Data and Content into each build's Data/Backup for mod compatibility
   -h, --help       Show this help message
 
 Valid releases:
@@ -54,15 +55,17 @@ Valid platforms:
   android
 
 Notes:
-  Omitting --platform selects the current host platform
-  Repeating --platform patches each requested platform
-  On Windows, the detected default is windows-dx
-  linux-x64 maps internally to linux-x64-standalone
-  linux-arm64 maps internally to linux-arm64-standalone
-  macos-arm64 maps internally to macos-arm64-game
-  macos-x64 maps internally to macos-x64-game
-  Output is written to ./patched/<platform>/
-  Downloaded patches are stored in a temporary directory and cleaned up automatically
+  * Omitting --platform selects the current host platform.
+  * Repeating --platform patches each requested platform.
+  * On Windows, the detected default is windows-dx.
+  * linux-x64 maps internally to linux-x64-standalone.
+  * linux-arm64 maps internally to linux-arm64-standalone.
+  * macos-arm64 maps internally to macos-arm64-game.
+  * macos-x64 maps internally to macos-x64-game.
+  * Output is written to ./patched/<platform>/.
+  * Downloaded patches are stored in a temporary directory and cleaned up automatically.
+  * --enable-mods is supported by windows, linux standalone, and macos builds; it is
+  ignored (with a notice) for android and linux appimages.
 EOF
 }
 
@@ -106,6 +109,48 @@ platform_for_key() {
   esac
 }
 
+enable_mods_for_key() {
+  local key="$1"
+  local platform_dir="$2"
+  local data_dir
+
+  case "$key" in
+  windows-dx | windows-gl | linux-x64-standalone | linux-arm64-standalone)
+    data_dir="${platform_dir}/Links Awakening DX HD/Data"
+    ;;
+  macos-arm64-game | macos-x64-game | macos-arm64-launcher | macos-x64-launcher)
+    data_dir=$(find "${platform_dir}" -maxdepth 4 -type d -name Data -path "*.app/Contents/MacOS/Data" | head -1)
+    ;;
+  linux-x64-appimage | linux-arm64-appimage | android)
+    echo "Notice: --enable-mods is not supported for '${key}', skipping mod enablement." >&2
+    return 0
+    ;;
+  *)
+    echo "Notice: --enable-mods is not implemented for '${key}', skipping mod enablement." >&2
+    return 0
+    ;;
+  esac
+
+  if [ -z "$data_dir" ] || [ ! -d "$data_dir" ]; then
+    echo "Warning: could not locate Data directory for '${key}' under '${platform_dir}', skipping mod enablement." >&2
+    return 0
+  fi
+
+  if [ -z "${V1_DATA_DIR:-}" ] || [ ! -d "${V1_DATA_DIR:-}" ]; then
+    echo "Warning: v1.0.0 Data directory not available, skipping mod enablement for '${key}'." >&2
+    return 0
+  fi
+  if [ -z "${V1_CONTENT_DIR:-}" ] || [ ! -d "${V1_CONTENT_DIR:-}" ]; then
+    echo "Warning: v1.0.0 Content directory not available, skipping mod enablement for '${key}'." >&2
+    return 0
+  fi
+
+  local backup_dir="${data_dir}/Backup"
+  mkdir -p "$backup_dir"
+  find "$V1_DATA_DIR" "$V1_CONTENT_DIR" -type f -exec sh -c 'cp "$@" "$0"/' "$backup_dir" {} +
+  echo "Enabled mods for '${key}': flattened v1.0.0 Data/Content into ${backup_dir}/"
+}
+
 # --- finalization functions ---
 
 # if a function named finalize_$platform is found, it will be
@@ -124,6 +169,7 @@ platform_for_key() {
 V1_ZIP=""
 RELEASE="latest"
 PLATFORMS=()
+ENABLE_MODS=false
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -157,6 +203,10 @@ while [ $# -gt 0 ]; do
     fi
     PLATFORMS+=("$2")
     shift 2
+    ;;
+  --enable-mods)
+    ENABLE_MODS=true
+    shift
     ;;
   -*)
     echo "Error: unknown option '$1'." >&2
@@ -265,6 +315,10 @@ else
   echo "Preparing patches for release '${RELEASE}' on platform '${PLATFORMS[0]}'."
 fi
 
+if [ "$ENABLE_MODS" = "true" ]; then
+  echo "Mod compatibility is enabled: v1.0.0 Data/Content will be flattened into each build's Data/Backup/."
+fi
+
 OUT_DIR="patched"
 PATCH_DIR="$(mktemp -d "${TMPDIR:-/tmp}/patch-release.XXXXXX")"
 mkdir -p "$OUT_DIR"
@@ -274,6 +328,36 @@ cleanup() {
 }
 
 trap cleanup EXIT
+
+# --- extract v1.0.0 zip for mod enablement ---
+
+V1_DATA_DIR=""
+V1_CONTENT_DIR=""
+
+if [ "$ENABLE_MODS" = "true" ]; then
+  V1_EXTRACT_DIR="${PATCH_DIR}/v1"
+  echo "Extracting v1.0.0 zip for mod enablement..."
+  unzip -qo "$V1_ZIP" -d "$V1_EXTRACT_DIR"
+
+  V1_GAME_DIR=$(find "$V1_EXTRACT_DIR" -maxdepth 2 -type d -name Data | head -1)
+  if [ -n "$V1_GAME_DIR" ]; then
+    V1_GAME_DIR=$(dirname "$V1_GAME_DIR")
+  fi
+
+  if [ -n "$V1_GAME_DIR" ] && [ -d "${V1_GAME_DIR}/Data" ]; then
+    V1_DATA_DIR="${V1_GAME_DIR}/Data"
+  fi
+  if [ -n "$V1_GAME_DIR" ] && [ -d "${V1_GAME_DIR}/Content" ]; then
+    V1_CONTENT_DIR="${V1_GAME_DIR}/Content"
+  fi
+
+  if [ -z "$V1_DATA_DIR" ]; then
+    echo "Warning: could not locate v1.0.0 Data directory in '${V1_ZIP}'; mod enablement will be skipped for all builds." >&2
+  fi
+  if [ -z "$V1_CONTENT_DIR" ]; then
+    echo "Warning: could not locate v1.0.0 Content directory in '${V1_ZIP}'; mod enablement will be skipped for all builds." >&2
+  fi
+fi
 
 # --- download xdelta patches ---
 
@@ -312,6 +396,10 @@ for key in "${KEYS[@]}"; do
   mkdir -p "$PLATFORM_DIR"
   unzip -qo "$PATCHED_ZIP" -d "$PLATFORM_DIR"
   rm -f "$PATCHED_ZIP"
+
+  if [ "$ENABLE_MODS" = "true" ]; then
+    enable_mods_for_key "$key" "$PLATFORM_DIR"
+  fi
 
   USER_PLATFORM="$(platform_for_key "$key")"
   FINALIZE_FN="finalize_${USER_PLATFORM//-/_}"
