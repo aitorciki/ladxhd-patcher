@@ -46,7 +46,7 @@ jobs:
         run: |
           export PATH="/c/Program Files/7-Zip:$PATH"
           unzip v1.zip -d v1
-          mkdir game/assets_original
+          mkdir -p game/assets_original
           cp -r "v1/Links Awakening DX HD/Data" game/assets_original/Data
           7z x "v1/Links Awakening DX HD/source.7z" -o"v1src"
           cp -r v1src/ProjectZ/Content game/assets_original/Content
@@ -61,7 +61,7 @@ jobs:
         run: |
           tar -czf migrated-source.tar.gz \
             -C game/ladxhd_game_source_code \
-            ProjectZ.Core/Content \
+            ProjectZ.Content/Content \
             ProjectZ.Core/Data
 
       - name: Upload migrated assets to R2
@@ -84,54 +84,47 @@ jobs:
       matrix:
         include:
           - key: windows-dx
-            project: ProjectZ.Desktop/ProjectZ.Desktop.csproj
+            project: ProjectZ.WindowsDX/ProjectZ.WindowsDX.csproj
             framework: net9.0-windows
             rid: win-x64
-            profile: FolderProfile_DX
+            profile: FolderProfile_Windows-DX
             output: "~Publish/Windows-DX"
-            extra: ""
           - key: windows-gl
-            project: ProjectZ.Desktop/ProjectZ.Desktop.csproj
+            project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: win-x64
-            profile: FolderProfile_GL
+            profile: FolderProfile_Windows-GL
             output: "~Publish/Windows-GL"
-            extra: ""
           - key: android
             project: ProjectZ.Android/ProjectZ.Android.csproj
             framework: net9.0-android
             rid: ""
             profile: FolderProfile_Android
             output: "~Publish/Android"
-            extra: "-p:EnableAndroidTargeting=true"
           - key: linux-x64
-            project: ProjectZ.Linux/ProjectZ.Linux.csproj
+            project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: linux-x64
-            profile: FolderProfile_Linux
+            profile: FolderProfile_Linux-x86_64
             output: "~Publish/Linux-x86_64"
-            extra: ""
           - key: linux-arm64
-            project: ProjectZ.Linux/ProjectZ.Linux.csproj
+            project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: linux-arm64
-            profile: FolderProfile_Linux_Arm
+            profile: FolderProfile_Linux-Arm64
             output: "~Publish/Linux-Arm64"
-            extra: ""
           - key: macos-arm64
-            project: ProjectZ.MacOS/ProjectZ.MacOS.csproj
+            project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: osx-arm64
-            profile: FolderProfile_MacOS
+            profile: FolderProfile_MacOS-Arm64
             output: "~Publish/MacOS-Arm64"
-            extra: ""
           - key: macos-x64
-            project: ProjectZ.MacOS/ProjectZ.MacOS.csproj
+            project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: osx-x64
-            profile: FolderProfile_MacOS_x64
+            profile: FolderProfile_MacOS-x86_64
             output: "~Publish/MacOS-x86_64"
-            extra: ""
 
     steps:
       - name: Checkout ladxhd-patcher
@@ -187,11 +180,7 @@ jobs:
           if [ -n "${{ matrix.rid }}" ]; then
             ARGS+=(-r "${{ matrix.rid }}")
           fi
-          EXTRA_ARGS=()
-          if [ -n "${{ matrix.extra }}" ]; then
-            EXTRA_ARGS+=("${{ matrix.extra }}")
-          fi
-          dotnet publish "${{ matrix.project }}" "${ARGS[@]}" "${EXTRA_ARGS[@]}"
+          dotnet publish "${{ matrix.project }}" "${ARGS[@]}"
 
       - name: Pack artifacts
         shell: bash
