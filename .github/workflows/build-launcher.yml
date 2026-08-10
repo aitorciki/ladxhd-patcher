@@ -77,7 +77,7 @@ jobs:
         shell: bash
         run: |
           tar -czf launcher-${{ matrix.platform }}.tar.gz \
-            -C "game/ladxhd_launcher_source_code/~Publish/${{ matrix.profile }}" \
+            -C "game/ladxhd_launcher_source_code/_Publish/${{ matrix.profile }}" \
             .
 
       - name: Upload artifacts to R2
