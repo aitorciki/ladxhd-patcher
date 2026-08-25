@@ -83,12 +83,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - key: windows-dx
-            project: ProjectZ.WindowsDX/ProjectZ.WindowsDX.csproj
+          - key: windows-dx11
+            project: ProjectZ.WindowsDX11/ProjectZ.WindowsDX11.csproj
             framework: net9.0-windows
             rid: win-x64
             profile: FolderProfile_Windows-DX
-            output: "_Publish/Windows-DX"
+            output: "_Publish/Windows-DX11"
           - key: windows-gl
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0

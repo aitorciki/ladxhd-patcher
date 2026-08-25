@@ -5,7 +5,7 @@ set -euo pipefail
 # Finalize a Windows build: merge game and launcher, then zip for distribution.
 #
 # Usage: scripts/finalize-windows.sh <key>
-#   key: windows-dx | windows-gl
+#   key: windows-dx11 | windows-gl
 #
 # Expects <key>.tar.gz and launcher-windows.tar.gz in the working directory.
 

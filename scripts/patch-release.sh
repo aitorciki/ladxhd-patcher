@@ -5,14 +5,14 @@ set -euo pipefail
 # Download and apply release xdelta patches against a v1.0.0 zip.
 
 ALL_KEYS=(
-  windows-dx windows-gl
+  windows-dx11 windows-gl
   linux-x64-standalone linux-arm64-standalone linux-x64-appimage linux-arm64-appimage
   macos-arm64-game macos-arm64-launcher macos-x64-game macos-x64-launcher
   android
 )
 
 VALID_PLATFORMS=(
-  windows-dx windows-gl
+  windows-dx11 windows-gl
   linux-x64 linux-arm64 linux-x64-appimage linux-arm64-appimage
   macos-arm64 macos-arm64-launcher macos-x64 macos-x64-launcher
   android
@@ -42,7 +42,7 @@ Valid releases:
 
 Valid platforms:
   all
-  windows-dx
+  windows-dx11
   windows-gl
   linux-x64
   linux-arm64
@@ -57,7 +57,7 @@ Valid platforms:
 Notes:
   * Omitting --platform selects the current host platform.
   * Repeating --platform patches each requested platform.
-  * On Windows, the detected default is windows-dx.
+  * On Windows, the detected default is windows-dx11.
   * linux-x64 maps internally to linux-x64-standalone.
   * linux-arm64 maps internally to linux-arm64-standalone.
   * macos-arm64 maps internally to macos-arm64-game.
@@ -91,7 +91,7 @@ detect_host_platform() {
     esac
     ;;
   MINGW* | MSYS* | CYGWIN*)
-    printf '%s\n' "windows-dx"
+    printf '%s\n' "windows-dx11"
     ;;
   *)
     return 1
@@ -115,7 +115,7 @@ enable_mods_for_key() {
   local data_dir
 
   case "$key" in
-  windows-dx | windows-gl | linux-x64-standalone | linux-arm64-standalone)
+  windows-dx11 | windows-gl | linux-x64-standalone | linux-arm64-standalone)
     data_dir="${platform_dir}/Links Awakening DX HD/Data"
     ;;
   macos-arm64-game | macos-x64-game | macos-arm64-launcher | macos-x64-launcher)

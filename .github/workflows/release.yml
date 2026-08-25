@@ -68,18 +68,18 @@ jobs:
         shell: bash
         run: |
           scripts/r2-download.sh \
-            windows-dx.tar.gz windows-gl.tar.gz launcher-windows.tar.gz
+            windows-dx11.tar.gz windows-gl.tar.gz launcher-windows.tar.gz
 
       - name: Finalize Windows
         shell: bash
         run: |
           export PATH="$PATH:/c/Program Files/7-Zip"
-          scripts/finalize-windows.sh windows-dx
+          scripts/finalize-windows.sh windows-dx11
           scripts/finalize-windows.sh windows-gl
 
       - name: Upload final packages to R2
         shell: bash
-        run: scripts/r2-upload.sh final-windows-dx.zip final-windows-gl.zip
+        run: scripts/r2-upload.sh final-windows-dx11.zip final-windows-gl.zip
 
   finalize-linux-standalone:
     needs: [game, launcher]
@@ -233,7 +233,7 @@ jobs:
         shell: bash
         run: |
           scripts/r2-download.sh \
-            final-windows-dx.zip final-windows-gl.zip \
+            final-windows-dx11.zip final-windows-gl.zip \
             final-linux-x64-standalone.zip final-linux-arm64-standalone.zip \
             final-linux-x64-appimage.zip final-linux-arm64-appimage.zip \
             final-macos-arm64-game.zip final-macos-x64-game.zip \
@@ -267,7 +267,7 @@ jobs:
         shell: bash
         run: |
           scripts/generate-xdelta-patches.sh v1.zip "$RELEASE_SUFFIX" \
-            windows-dx windows-gl \
+            windows-dx11 windows-gl \
             linux-x64-standalone linux-arm64-standalone \
             linux-x64-appimage linux-arm64-appimage \
             macos-arm64-game macos-x64-game \
@@ -286,7 +286,7 @@ jobs:
           PRERELEASE_FLAGS=()
           [ "$IS_NIGHTLY" = "true" ] && PRERELEASE_FLAGS+=(--prerelease)
           ASSETS=()
-          for key in windows-dx windows-gl \
+          for key in windows-dx11 windows-gl \
                      linux-x64-standalone linux-arm64-standalone \
                      linux-x64-appimage linux-arm64-appimage \
                      macos-arm64-game macos-x64-game \
@@ -300,12 +300,12 @@ jobs:
             --notes "$RELEASE_NOTES" \
             "${ASSETS[@]}"
 
-      - name: Upload xdelta - windows-dx
+      - name: Upload xdelta - windows-dx11
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
         with:
-          name: windows-dx-build-${{ github.run_id }}
-          path: windows-dx-*.xdelta
+          name: windows-dx11-build-${{ github.run_id }}
+          path: windows-dx11-*.xdelta
           archive: false
 
       - name: Upload xdelta - windows-gl
