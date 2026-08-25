@@ -5,9 +5,10 @@ set -euo pipefail
 # Finalize a macOS build: merge game and launcher, bundle .app packages, then zip.
 #
 # Usage: scripts/finalize-macos.sh <key>
-#   key: macos-arm64 | macos-x64
+#   key: macos-arm64 | macos-x64 | macos-arm64-vk | macos-x64-vk
 #
-# Expects <key>.tar.gz and launcher-<key>.tar.gz in the working directory.
+# Expects <key>.tar.gz and the matching architecture's launcher archive in the
+# working directory.
 #
 # Required environment variables:
 #   GAME_VERSION  Version string, e.g. "1.8.3"
@@ -17,6 +18,7 @@ set -euo pipefail
 : "${ICON_SRC:?ICON_SRC is not set}"
 
 KEY="${1:?usage: scripts/finalize-macos.sh <key>}"
+LAUNCHER_KEY="${KEY%-vk}"
 WORK_DIR="work-${KEY}"
 GAME_EXE="Link's Awakening DX HD"
 GAME_BUNDLE="${WORK_DIR}/${GAME_EXE}.app"
@@ -29,7 +31,7 @@ rm -f "final-${KEY}-game.zip" "final-${KEY}-launcher.zip"
 mkdir -p "${WORK_DIR}" "${GAME_STAGING_DIR}" "${LAUNCHER_STAGING_DIR}"
 
 tar -xzf "${KEY}.tar.gz" -C "${WORK_DIR}"
-tar -xzf "launcher-${KEY}.tar.gz" -C "${WORK_DIR}"
+tar -xzf "launcher-${LAUNCHER_KEY}.tar.gz" -C "${WORK_DIR}"
 
 chmod +x "${WORK_DIR}/${GAME_EXE}" "${WORK_DIR}/Launcher"
 

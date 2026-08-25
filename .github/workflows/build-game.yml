@@ -89,42 +89,78 @@ jobs:
             rid: win-x64
             profile: FolderProfile_Windows-DX
             output: "_Publish/Windows-DX11"
+          - key: windows-dx12
+            project: ProjectZ.WindowsDX12/ProjectZ.WindowsDX12.csproj
+            framework: net9.0-windows
+            rid: win-x64
+            profile: FolderProfile_Windows-DX12
+            output: "_Publish/Windows-DX12"
           - key: windows-gl
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: win-x64
             profile: FolderProfile_Windows-GL
             output: "_Publish/Windows-GL"
+          - key: windows-vk
+            project: ProjectZ.DesktopVK/ProjectZ.DesktopVK.csproj
+            framework: net9.0
+            rid: win-x64
+            profile: FolderProfile_Windows-VK
+            output: "_Publish/Windows-VK"
           - key: android
             project: ProjectZ.Android/ProjectZ.Android.csproj
             framework: net9.0-android
             rid: ""
             profile: FolderProfile_Android
-            output: "_Publish/Android"
+            output: "_Publish/Android-GL"
           - key: linux-x64
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: linux-x64
             profile: FolderProfile_Linux-x86_64
-            output: "_Publish/Linux-x86_64"
+            output: "_Publish/Linux-x86_64-GL"
           - key: linux-arm64
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: linux-arm64
             profile: FolderProfile_Linux-Arm64
-            output: "_Publish/Linux-Arm64"
+            output: "_Publish/Linux-Arm64-GL"
+          - key: linux-x64-vk
+            project: ProjectZ.DesktopVK/ProjectZ.DesktopVK.csproj
+            framework: net9.0
+            rid: linux-x64
+            profile: FolderProfile_Linux-x86_64
+            output: "_Publish/Linux-x86_64-VK"
+          - key: linux-arm64-vk
+            project: ProjectZ.DesktopVK/ProjectZ.DesktopVK.csproj
+            framework: net9.0
+            rid: linux-arm64
+            profile: FolderProfile_Linux-Arm64
+            output: "_Publish/Linux-Arm64-VK"
           - key: macos-arm64
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: osx-arm64
             profile: FolderProfile_MacOS-Arm64
-            output: "_Publish/MacOS-Arm64"
+            output: "_Publish/MacOS-Arm64-GL"
           - key: macos-x64
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: osx-x64
             profile: FolderProfile_MacOS-x86_64
-            output: "_Publish/MacOS-x86_64"
+            output: "_Publish/MacOS-x86_64-GL"
+          - key: macos-arm64-vk
+            project: ProjectZ.DesktopVK/ProjectZ.DesktopVK.csproj
+            framework: net9.0
+            rid: osx-arm64
+            profile: FolderProfile_MacOS-Arm64
+            output: "_Publish/MacOS-Arm64-VK"
+          - key: macos-x64-vk
+            project: ProjectZ.DesktopVK/ProjectZ.DesktopVK.csproj
+            framework: net9.0
+            rid: osx-x64
+            profile: FolderProfile_MacOS-x86_64
+            output: "_Publish/MacOS-x86_64-VK"
 
     steps:
       - name: Checkout ladxhd-patcher
@@ -149,7 +185,7 @@ jobs:
       - name: Cache NuGet packages
         uses: actions/cache@v5
         env:
-          CACHE_GROUP: ${{ matrix.framework == 'net9.0' && 'net9.0-gl' || matrix.framework }}
+          CACHE_GROUP: ${{ matrix.framework }}
         with:
           path: ~/.nuget/packages
           key: nuget-game-${{ env.CACHE_GROUP }}-${{ hashFiles('game/**/*.csproj') }}

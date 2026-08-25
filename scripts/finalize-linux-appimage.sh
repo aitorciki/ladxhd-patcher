@@ -6,9 +6,10 @@ set -euo pipefail
 # package with appimagetool, then zip for distribution.
 #
 # Usage: scripts/finalize-linux-appimage.sh <key>
-#   key: linux-x64 | linux-arm64
+#   key: linux-x64 | linux-arm64 | linux-x64-vk | linux-arm64-vk
 #
-# Expects <key>.tar.gz and launcher-<key>.tar.gz in the working directory.
+# Expects <key>.tar.gz and the matching architecture's launcher archive in the
+# working directory.
 #
 # Required environment variables:
 #   ICON_SVG  Path to Icon.svg (AppImage desktop icon)
@@ -26,8 +27,22 @@ APPIMAGE_NAME="Link's Awakening DX HD.AppImage"
 DESKTOP_NAME="links-awakening-dx-hd"
 
 case "${KEY}" in
-linux-x64) ARCH=x86_64 ;;
-linux-arm64) ARCH=aarch64 ;;
+linux-x64)
+  ARCH=x86_64
+  LAUNCHER_KEY="linux-x64"
+  ;;
+linux-x64-vk)
+  ARCH=x86_64
+  LAUNCHER_KEY="linux-x64"
+  ;;
+linux-arm64)
+  ARCH=aarch64
+  LAUNCHER_KEY="linux-arm64"
+  ;;
+linux-arm64-vk)
+  ARCH=aarch64
+  LAUNCHER_KEY="linux-arm64"
+  ;;
 *)
   echo "Unknown key: ${KEY}"
   exit 1
@@ -39,7 +54,7 @@ rm -f "${APPIMAGE_NAME}" "final-${KEY}-appimage.zip"
 mkdir -p "${GAME_DIR}" "${LAUNCHER_DIR}" "${APPDIR}/opt"
 
 tar -xzf "${KEY}.tar.gz" -C "${GAME_DIR}"
-tar -xzf "launcher-${KEY}.tar.gz" -C "${LAUNCHER_DIR}"
+tar -xzf "launcher-${LAUNCHER_KEY}.tar.gz" -C "${LAUNCHER_DIR}"
 
 cp -r "${GAME_DIR}/"* "${APPDIR}/opt/"
 cp -r "${LAUNCHER_DIR}/Launcher" "${APPDIR}/opt/"

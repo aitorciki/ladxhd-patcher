@@ -68,18 +68,20 @@ jobs:
         shell: bash
         run: |
           scripts/r2-download.sh \
-            windows-dx11.tar.gz windows-gl.tar.gz launcher-windows.tar.gz
+            windows-dx11.tar.gz windows-dx12.tar.gz windows-gl.tar.gz windows-vk.tar.gz launcher-windows.tar.gz
 
       - name: Finalize Windows
         shell: bash
         run: |
           export PATH="$PATH:/c/Program Files/7-Zip"
           scripts/finalize-windows.sh windows-dx11
+          scripts/finalize-windows.sh windows-dx12
           scripts/finalize-windows.sh windows-gl
+          scripts/finalize-windows.sh windows-vk
 
       - name: Upload final packages to R2
         shell: bash
-        run: scripts/r2-upload.sh final-windows-dx11.zip final-windows-gl.zip
+        run: scripts/r2-upload.sh final-windows-dx11.zip final-windows-dx12.zip final-windows-gl.zip final-windows-vk.zip
 
   finalize-linux-standalone:
     needs: [game, launcher]
@@ -92,7 +94,7 @@ jobs:
         shell: bash
         run: |
           scripts/r2-download.sh \
-            linux-x64.tar.gz linux-arm64.tar.gz \
+            linux-x64.tar.gz linux-arm64.tar.gz linux-x64-vk.tar.gz linux-arm64-vk.tar.gz \
             launcher-linux-x64.tar.gz launcher-linux-arm64.tar.gz
 
       - name: Finalize Linux Standalone
@@ -100,10 +102,12 @@ jobs:
         run: |
           scripts/finalize-linux-standalone.sh linux-x64
           scripts/finalize-linux-standalone.sh linux-arm64
+          scripts/finalize-linux-standalone.sh linux-x64-vk
+          scripts/finalize-linux-standalone.sh linux-arm64-vk
 
       - name: Upload final packages to R2
         shell: bash
-        run: scripts/r2-upload.sh final-linux-x64-standalone.zip final-linux-arm64-standalone.zip
+        run: scripts/r2-upload.sh final-linux-x64-standalone.zip final-linux-arm64-standalone.zip final-linux-x64-vk-standalone.zip final-linux-arm64-vk-standalone.zip
 
   finalize-linux-appimage:
     needs: [game, launcher]
@@ -124,7 +128,7 @@ jobs:
         shell: bash
         run: |
           scripts/r2-download.sh \
-            linux-x64.tar.gz linux-arm64.tar.gz \
+            linux-x64.tar.gz linux-arm64.tar.gz linux-x64-vk.tar.gz linux-arm64-vk.tar.gz \
             launcher-linux-x64.tar.gz launcher-linux-arm64.tar.gz
 
       - name: Finalize Linux AppImage
@@ -135,10 +139,12 @@ jobs:
         run: |
           scripts/finalize-linux-appimage.sh linux-x64
           scripts/finalize-linux-appimage.sh linux-arm64
+          scripts/finalize-linux-appimage.sh linux-x64-vk
+          scripts/finalize-linux-appimage.sh linux-arm64-vk
 
       - name: Upload final packages to R2
         shell: bash
-        run: scripts/r2-upload.sh final-linux-x64-appimage.zip final-linux-arm64-appimage.zip
+        run: scripts/r2-upload.sh final-linux-x64-appimage.zip final-linux-arm64-appimage.zip final-linux-x64-vk-appimage.zip final-linux-arm64-vk-appimage.zip
 
   finalize-macos:
     needs: [game, launcher]
@@ -168,7 +174,7 @@ jobs:
         shell: bash
         run: |
           scripts/r2-download.sh \
-            macos-arm64.tar.gz macos-x64.tar.gz \
+            macos-arm64.tar.gz macos-x64.tar.gz macos-arm64-vk.tar.gz macos-x64-vk.tar.gz \
             launcher-macos-arm64.tar.gz launcher-macos-x64.tar.gz
 
       - name: Finalize macOS
@@ -178,13 +184,17 @@ jobs:
         run: |
           scripts/finalize-macos.sh macos-arm64
           scripts/finalize-macos.sh macos-x64
+          scripts/finalize-macos.sh macos-arm64-vk
+          scripts/finalize-macos.sh macos-x64-vk
 
       - name: Upload final packages to R2
         shell: bash
         run: |
           scripts/r2-upload.sh \
             final-macos-arm64-game.zip final-macos-arm64-launcher.zip \
-            final-macos-x64-game.zip final-macos-x64-launcher.zip
+            final-macos-x64-game.zip final-macos-x64-launcher.zip \
+            final-macos-arm64-vk-game.zip final-macos-arm64-vk-launcher.zip \
+            final-macos-x64-vk-game.zip final-macos-x64-vk-launcher.zip
 
   finalize-android:
     needs: [game]
@@ -233,11 +243,13 @@ jobs:
         shell: bash
         run: |
           scripts/r2-download.sh \
-            final-windows-dx11.zip final-windows-gl.zip \
-            final-linux-x64-standalone.zip final-linux-arm64-standalone.zip \
-            final-linux-x64-appimage.zip final-linux-arm64-appimage.zip \
+            final-windows-dx11.zip final-windows-dx12.zip final-windows-gl.zip final-windows-vk.zip \
+            final-linux-x64-standalone.zip final-linux-arm64-standalone.zip final-linux-x64-vk-standalone.zip final-linux-arm64-vk-standalone.zip \
+            final-linux-x64-appimage.zip final-linux-arm64-appimage.zip final-linux-x64-vk-appimage.zip final-linux-arm64-vk-appimage.zip \
             final-macos-arm64-game.zip final-macos-x64-game.zip \
             final-macos-arm64-launcher.zip final-macos-x64-launcher.zip \
+            final-macos-arm64-vk-game.zip final-macos-x64-vk-game.zip \
+            final-macos-arm64-vk-launcher.zip final-macos-x64-vk-launcher.zip \
             final-android.zip
 
       - name: Compute release metadata
@@ -267,11 +279,13 @@ jobs:
         shell: bash
         run: |
           scripts/generate-xdelta-patches.sh v1.zip "$RELEASE_SUFFIX" \
-            windows-dx11 windows-gl \
-            linux-x64-standalone linux-arm64-standalone \
-            linux-x64-appimage linux-arm64-appimage \
+            windows-dx11 windows-dx12 windows-gl windows-vk \
+            linux-x64-standalone linux-arm64-standalone linux-x64-vk-standalone linux-arm64-vk-standalone \
+            linux-x64-appimage linux-arm64-appimage linux-x64-vk-appimage linux-arm64-vk-appimage \
             macos-arm64-game macos-x64-game \
             macos-arm64-launcher macos-x64-launcher \
+            macos-arm64-vk-game macos-x64-vk-game \
+            macos-arm64-vk-launcher macos-x64-vk-launcher \
             android
 
       - name: Create GitHub release
@@ -286,11 +300,13 @@ jobs:
           PRERELEASE_FLAGS=()
           [ "$IS_NIGHTLY" = "true" ] && PRERELEASE_FLAGS+=(--prerelease)
           ASSETS=()
-          for key in windows-dx11 windows-gl \
-                     linux-x64-standalone linux-arm64-standalone \
-                     linux-x64-appimage linux-arm64-appimage \
+          for key in windows-dx11 windows-dx12 windows-gl windows-vk \
+                     linux-x64-standalone linux-arm64-standalone linux-x64-vk-standalone linux-arm64-vk-standalone \
+                     linux-x64-appimage linux-arm64-appimage linux-x64-vk-appimage linux-arm64-vk-appimage \
                      macos-arm64-game macos-x64-game \
                      macos-arm64-launcher macos-x64-launcher \
+                     macos-arm64-vk-game macos-x64-vk-game \
+                     macos-arm64-vk-launcher macos-x64-vk-launcher \
                      android; do
             ASSETS+=("${key}-${RELEASE_SUFFIX}.xdelta")
           done
@@ -316,6 +332,22 @@ jobs:
           path: windows-gl-*.xdelta
           archive: false
 
+      - name: Upload xdelta - windows-dx12
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-dx12-build-${{ github.run_id }}
+          path: windows-dx12-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - windows-vk
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-vk-build-${{ github.run_id }}
+          path: windows-vk-*.xdelta
+          archive: false
+
       - name: Upload xdelta - linux-x64
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
@@ -332,6 +364,22 @@ jobs:
           path: linux-arm64-standalone-*.xdelta
           archive: false
 
+      - name: Upload xdelta - linux-x64-vk
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-x64-vk-build-${{ github.run_id }}
+          path: linux-x64-vk-standalone-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - linux-arm64-vk
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-arm64-vk-build-${{ github.run_id }}
+          path: linux-arm64-vk-standalone-*.xdelta
+          archive: false
+
       - name: Upload xdelta - linux-x64-appimage
         if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
         uses: actions/upload-artifact@v7
@@ -346,6 +394,22 @@ jobs:
         with:
           name: linux-arm64-appimage-build-${{ github.run_id }}
           path: linux-arm64-appimage-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - linux-x64-vk-appimage
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-x64-vk-appimage-build-${{ github.run_id }}
+          path: linux-x64-vk-appimage-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - linux-arm64-vk-appimage
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-arm64-vk-appimage-build-${{ github.run_id }}
+          path: linux-arm64-vk-appimage-*.xdelta
           archive: false
 
       - name: Upload xdelta - macos-arm64-game
@@ -378,6 +442,38 @@ jobs:
         with:
           name: macos-x64-launcher-build-${{ github.run_id }}
           path: macos-x64-launcher-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - macos-arm64-vk-game
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-arm64-vk-game-build-${{ github.run_id }}
+          path: macos-arm64-vk-game-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - macos-arm64-vk-launcher
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-arm64-vk-launcher-build-${{ github.run_id }}
+          path: macos-arm64-vk-launcher-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - macos-x64-vk-game
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-x64-vk-game-build-${{ github.run_id }}
+          path: macos-x64-vk-game-*.xdelta
+          archive: false
+
+      - name: Upload xdelta - macos-x64-vk-launcher
+        if: github.event_name == 'workflow_dispatch' && inputs.trigger == 'manual'
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-x64-vk-launcher-build-${{ github.run_id }}
+          path: macos-x64-vk-launcher-*.xdelta
           archive: false
 
       - name: Upload xdelta - android

@@ -5,15 +5,30 @@ set -euo pipefail
 # Finalize a Linux build: merge game and launcher, then zip for distribution.
 #
 # Usage: scripts/finalize-linux-standalone.sh <key>
-#   key: linux-x64 | linux-arm64
+#   key: linux-x64 | linux-arm64 | linux-x64-vk | linux-arm64-vk
 #
-# Expects <key>.tar.gz and launcher-<key>.tar.gz in the working directory.
+# Expects <key>.tar.gz and the matching architecture's launcher archive in the
+# working directory.
 
 KEY="${1:?usage: scripts/finalize-linux-standalone.sh <key>}"
 
 case "${KEY}" in
-linux-x64) OUTPUT_KEY="linux-x64-standalone" ;;
-linux-arm64) OUTPUT_KEY="linux-arm64-standalone" ;;
+linux-x64)
+  OUTPUT_KEY="linux-x64-standalone"
+  LAUNCHER_KEY="linux-x64"
+  ;;
+linux-arm64)
+  OUTPUT_KEY="linux-arm64-standalone"
+  LAUNCHER_KEY="linux-arm64"
+  ;;
+linux-x64-vk)
+  OUTPUT_KEY="linux-x64-vk-standalone"
+  LAUNCHER_KEY="linux-x64"
+  ;;
+linux-arm64-vk)
+  OUTPUT_KEY="linux-arm64-vk-standalone"
+  LAUNCHER_KEY="linux-arm64"
+  ;;
 *)
   echo "Unknown key: ${KEY}" >&2
   exit 1
@@ -31,7 +46,7 @@ rm -f "final-${OUTPUT_KEY}.zip"
 mkdir -p "${GAME_DIR}" "${LAUNCHER_DIR}" "${PACKAGE_DIR}"
 
 tar -xzf "${KEY}.tar.gz" -C "${GAME_DIR}"
-tar -xzf "launcher-${KEY}.tar.gz" -C "${LAUNCHER_DIR}"
+tar -xzf "launcher-${LAUNCHER_KEY}.tar.gz" -C "${LAUNCHER_DIR}"
 
 cp -r "${LAUNCHER_DIR}/Launcher" "${GAME_DIR}/"
 chmod +x "${GAME_DIR}/Link's Awakening DX HD" "${GAME_DIR}/Launcher"
