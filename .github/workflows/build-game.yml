@@ -87,7 +87,7 @@ jobs:
             project: ProjectZ.WindowsDX11/ProjectZ.WindowsDX11.csproj
             framework: net9.0-windows
             rid: win-x64
-            profile: FolderProfile_Windows-DX
+            profile: FolderProfile_Windows-DX11
             output: "_Publish/Windows-DX11"
           - key: windows-dx12
             project: ProjectZ.WindowsDX12/ProjectZ.WindowsDX12.csproj
