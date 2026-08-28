@@ -57,7 +57,9 @@ jobs:
           git clone --depth 1 --filter=blob:none --sparse \
             --branch "${{ inputs.game_ref || 'main' }}" \
             https://gitlab.com/bighead.0/ladxhd_updated.git game
-          git -C game sparse-checkout set ladxhd_launcher_source_code
+          git -C game sparse-checkout set \
+            ladxhd_launcher_source_code \
+            shared
 
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v5
