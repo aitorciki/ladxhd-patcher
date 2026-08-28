@@ -5,7 +5,7 @@ set -euo pipefail
 # Finalize a Linux build: merge game and launcher, then zip for distribution.
 #
 # Usage: scripts/finalize-linux-standalone.sh <key>
-#   key: linux-x64 | linux-arm64 | linux-x64-vk | linux-arm64-vk
+#   key: linux-x64-gl | linux-arm64-gl | linux-x64-vk | linux-arm64-vk
 #
 # Expects <key>.tar.gz and the matching architecture's launcher archive in the
 # working directory.
@@ -13,12 +13,12 @@ set -euo pipefail
 KEY="${1:?usage: scripts/finalize-linux-standalone.sh <key>}"
 
 case "${KEY}" in
-linux-x64)
-  OUTPUT_KEY="linux-x64-standalone"
+linux-x64-gl)
+  OUTPUT_KEY="linux-x64-gl-standalone"
   LAUNCHER_KEY="linux-x64"
   ;;
-linux-arm64)
-  OUTPUT_KEY="linux-arm64-standalone"
+linux-arm64-gl)
+  OUTPUT_KEY="linux-arm64-gl-standalone"
   LAUNCHER_KEY="linux-arm64"
   ;;
 linux-x64-vk)

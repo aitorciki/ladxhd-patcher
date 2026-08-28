@@ -6,7 +6,7 @@ set -euo pipefail
 # package with appimagetool, then zip for distribution.
 #
 # Usage: scripts/finalize-linux-appimage.sh <key>
-#   key: linux-x64 | linux-arm64 | linux-x64-vk | linux-arm64-vk
+#   key: linux-x64-gl | linux-arm64-gl | linux-x64-vk | linux-arm64-vk
 #
 # Expects <key>.tar.gz and the matching architecture's launcher archive in the
 # working directory.
@@ -27,7 +27,7 @@ APPIMAGE_NAME="Link's Awakening DX HD.AppImage"
 DESKTOP_NAME="links-awakening-dx-hd"
 
 case "${KEY}" in
-linux-x64)
+linux-x64-gl)
   ARCH=x86_64
   LAUNCHER_KEY="linux-x64"
   ;;
@@ -35,7 +35,7 @@ linux-x64-vk)
   ARCH=x86_64
   LAUNCHER_KEY="linux-x64"
   ;;
-linux-arm64)
+linux-arm64-gl)
   ARCH=aarch64
   LAUNCHER_KEY="linux-arm64"
   ;;

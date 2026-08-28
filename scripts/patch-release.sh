@@ -6,18 +6,18 @@ set -euo pipefail
 
 ALL_KEYS=(
   windows-dx11 windows-dx12 windows-gl windows-vk
-  linux-x64-standalone linux-arm64-standalone linux-x64-vk-standalone linux-arm64-vk-standalone
-  linux-x64-appimage linux-arm64-appimage linux-x64-vk-appimage linux-arm64-vk-appimage
-  macos-arm64-game macos-arm64-launcher macos-x64-game macos-x64-launcher
+  linux-x64-gl-standalone linux-arm64-gl-standalone linux-x64-vk-standalone linux-arm64-vk-standalone
+  linux-x64-gl-appimage linux-arm64-gl-appimage linux-x64-vk-appimage linux-arm64-vk-appimage
+  macos-arm64-gl-game macos-arm64-gl-launcher macos-x64-gl-game macos-x64-gl-launcher
   macos-arm64-vk-game macos-arm64-vk-launcher macos-x64-vk-game macos-x64-vk-launcher
   android
 )
 
 VALID_PLATFORMS=(
   windows-dx11 windows-dx12 windows-gl windows-vk
-  linux-x64 linux-arm64 linux-x64-vk linux-arm64-vk
-  linux-x64-appimage linux-arm64-appimage linux-x64-vk-appimage linux-arm64-vk-appimage
-  macos-arm64 macos-arm64-launcher macos-x64 macos-x64-launcher
+  linux-x64-gl linux-arm64-gl linux-x64-vk linux-arm64-vk
+  linux-x64-gl-appimage linux-arm64-gl-appimage linux-x64-vk-appimage linux-arm64-vk-appimage
+  macos-arm64-gl macos-arm64-gl-launcher macos-x64-gl macos-x64-gl-launcher
   macos-arm64-vk macos-arm64-vk-launcher macos-x64-vk macos-x64-vk-launcher
   android
 )
@@ -50,18 +50,18 @@ Valid platforms:
   windows-dx12
   windows-gl
   windows-vk
-  linux-x64
-  linux-arm64
+  linux-x64-gl
+  linux-arm64-gl
   linux-x64-vk
   linux-arm64-vk
-  linux-x64-appimage
-  linux-arm64-appimage
+  linux-x64-gl-appimage
+  linux-arm64-gl-appimage
   linux-x64-vk-appimage
   linux-arm64-vk-appimage
-  macos-arm64
-  macos-arm64-launcher
-  macos-x64
-  macos-x64-launcher
+  macos-arm64-gl
+  macos-arm64-gl-launcher
+  macos-x64-gl
+  macos-x64-gl-launcher
   macos-arm64-vk
   macos-arm64-vk-launcher
   macos-x64-vk
@@ -72,12 +72,12 @@ Notes:
   * Omitting --platform selects the current host platform.
   * Repeating --platform patches each requested platform.
   * On Windows, the detected default is windows-dx11.
-  * linux-x64 maps internally to linux-x64-standalone.
-  * linux-arm64 maps internally to linux-arm64-standalone.
+  * linux-x64-gl maps internally to linux-x64-gl-standalone.
+  * linux-arm64-gl maps internally to linux-arm64-gl-standalone.
   * linux-x64-vk maps internally to linux-x64-vk-standalone.
   * linux-arm64-vk maps internally to linux-arm64-vk-standalone.
-  * macos-arm64 maps internally to macos-arm64-game.
-  * macos-x64 maps internally to macos-x64-game.
+  * macos-arm64-gl maps internally to macos-arm64-gl-game.
+  * macos-x64-gl maps internally to macos-x64-gl-game.
   * macos-arm64-vk maps internally to macos-arm64-vk-game.
   * macos-x64-vk maps internally to macos-x64-vk-game.
   * Output is written to ./patched/<platform>/.
@@ -96,15 +96,15 @@ detect_host_platform() {
   case "$os" in
   Darwin)
     case "$arch" in
-    arm64) printf '%s\n' "macos-arm64" ;;
-    x86_64) printf '%s\n' "macos-x64" ;;
+    arm64) printf '%s\n' "macos-arm64-vk" ;;
+    x86_64) printf '%s\n' "macos-x64-vk" ;;
     *) return 1 ;;
     esac
     ;;
   Linux)
     case "$arch" in
-    x86_64) printf '%s\n' "linux-x64" ;;
-    aarch64 | arm64) printf '%s\n' "linux-arm64" ;;
+    x86_64) printf '%s\n' "linux-x64-gl" ;;
+    aarch64 | arm64) printf '%s\n' "linux-arm64-gl" ;;
     *) return 1 ;;
     esac
     ;;
@@ -119,12 +119,12 @@ detect_host_platform() {
 
 platform_for_key() {
   case "$1" in
-  linux-x64-standalone) printf '%s\n' "linux-x64" ;;
-  linux-arm64-standalone) printf '%s\n' "linux-arm64" ;;
+  linux-x64-gl-standalone) printf '%s\n' "linux-x64-gl" ;;
+  linux-arm64-gl-standalone) printf '%s\n' "linux-arm64-gl" ;;
   linux-x64-vk-standalone) printf '%s\n' "linux-x64-vk" ;;
   linux-arm64-vk-standalone) printf '%s\n' "linux-arm64-vk" ;;
-  macos-arm64-game) printf '%s\n' "macos-arm64" ;;
-  macos-x64-game) printf '%s\n' "macos-x64" ;;
+  macos-arm64-gl-game) printf '%s\n' "macos-arm64-gl" ;;
+  macos-x64-gl-game) printf '%s\n' "macos-x64-gl" ;;
   macos-arm64-vk-game) printf '%s\n' "macos-arm64-vk" ;;
   macos-x64-vk-game) printf '%s\n' "macos-x64-vk" ;;
   *) printf '%s\n' "$1" ;;
@@ -137,13 +137,13 @@ enable_mods_for_key() {
   local data_dir
 
   case "$key" in
-  windows-dx11 | windows-dx12 | windows-gl | windows-vk | linux-x64-standalone | linux-arm64-standalone | linux-x64-vk-standalone | linux-arm64-vk-standalone)
+  windows-dx11 | windows-dx12 | windows-gl | windows-vk | linux-x64-gl-standalone | linux-arm64-gl-standalone | linux-x64-vk-standalone | linux-arm64-vk-standalone)
     data_dir="${platform_dir}/Links Awakening DX HD/Data"
     ;;
-  macos-arm64-game | macos-x64-game | macos-arm64-launcher | macos-x64-launcher | macos-arm64-vk-game | macos-x64-vk-game | macos-arm64-vk-launcher | macos-x64-vk-launcher)
+  macos-arm64-gl-game | macos-x64-gl-game | macos-arm64-gl-launcher | macos-x64-gl-launcher | macos-arm64-vk-game | macos-x64-vk-game | macos-arm64-vk-launcher | macos-x64-vk-launcher)
     data_dir=$(find "${platform_dir}" -maxdepth 4 -type d -name Data -path "*.app/Contents/MacOS/Data" | head -1)
     ;;
-  linux-x64-appimage | linux-arm64-appimage | linux-x64-vk-appimage | linux-arm64-vk-appimage | android)
+  linux-x64-gl-appimage | linux-arm64-gl-appimage | linux-x64-vk-appimage | linux-arm64-vk-appimage | android)
     echo "Notice: --enable-mods is not supported for '${key}', skipping mod enablement." >&2
     return 0
     ;;
@@ -300,12 +300,12 @@ for platform in "${PLATFORMS[@]}"; do
   fi
 
   case "$platform" in
-  linux-x64) key="linux-x64-standalone" ;;
-  linux-arm64) key="linux-arm64-standalone" ;;
+  linux-x64-gl) key="linux-x64-gl-standalone" ;;
+  linux-arm64-gl) key="linux-arm64-gl-standalone" ;;
   linux-x64-vk) key="linux-x64-vk-standalone" ;;
   linux-arm64-vk) key="linux-arm64-vk-standalone" ;;
-  macos-arm64) key="macos-arm64-game" ;;
-  macos-x64) key="macos-x64-game" ;;
+  macos-arm64-gl) key="macos-arm64-gl-game" ;;
+  macos-x64-gl) key="macos-x64-gl-game" ;;
   macos-arm64-vk) key="macos-arm64-vk-game" ;;
   macos-x64-vk) key="macos-x64-vk-game" ;;
   *) key="$platform" ;;

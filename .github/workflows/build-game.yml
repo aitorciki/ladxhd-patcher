@@ -113,13 +113,13 @@ jobs:
             rid: ""
             profile: FolderProfile_Android
             output: "_Publish/Android-GL"
-          - key: linux-x64
+          - key: linux-x64-gl
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: linux-x64
             profile: FolderProfile_Linux-x86_64
             output: "_Publish/Linux-x86_64-GL"
-          - key: linux-arm64
+          - key: linux-arm64-gl
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: linux-arm64
@@ -137,13 +137,13 @@ jobs:
             rid: linux-arm64
             profile: FolderProfile_Linux-Arm64
             output: "_Publish/Linux-Arm64-VK"
-          - key: macos-arm64
+          - key: macos-arm64-gl
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: osx-arm64
             profile: FolderProfile_MacOS-Arm64
             output: "_Publish/MacOS-Arm64-GL"
-          - key: macos-x64
+          - key: macos-x64-gl
             project: ProjectZ.DesktopGL/ProjectZ.DesktopGL.csproj
             framework: net9.0
             rid: osx-x64

@@ -5,7 +5,7 @@ set -euo pipefail
 # Finalize a macOS build: merge game and launcher, bundle .app packages, then zip.
 #
 # Usage: scripts/finalize-macos.sh <key>
-#   key: macos-arm64 | macos-x64 | macos-arm64-vk | macos-x64-vk
+#   key: macos-arm64-gl | macos-x64-gl | macos-arm64-vk | macos-x64-vk
 #
 # Expects <key>.tar.gz and the matching architecture's launcher archive in the
 # working directory.
@@ -18,7 +18,13 @@ set -euo pipefail
 : "${ICON_SRC:?ICON_SRC is not set}"
 
 KEY="${1:?usage: scripts/finalize-macos.sh <key>}"
-LAUNCHER_KEY="${KEY%-vk}"
+case "${KEY}" in
+macos-arm64-gl | macos-arm64-vk | macos-x64-gl | macos-x64-vk) LAUNCHER_KEY="${KEY%-*}" ;;
+*)
+  echo "Unknown key: ${KEY}" >&2
+  exit 1
+  ;;
+esac
 WORK_DIR="work-${KEY}"
 GAME_EXE="Link's Awakening DX HD"
 GAME_BUNDLE="${WORK_DIR}/${GAME_EXE}.app"
